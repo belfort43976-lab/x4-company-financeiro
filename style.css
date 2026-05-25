@@ -834,54 +834,110 @@ th {
   }
 
   .app {
-    flex-direction: column;
+    display: none;
+    flex-direction: row;
+    min-height: 100vh;
   }
 
   .sidebar {
-    width: 100%;
-    min-height: auto;
-    padding: 24px 18px;
-    border-right: none;
-    border-bottom: 1px solid #00d9ff;
+    width: 86px;
+    min-width: 86px;
+    min-height: 100vh;
+    padding: 16px 10px;
+    position: sticky;
+    top: 0;
+    border-right: 1px solid #00d9ff;
+    border-bottom: none;
+    overflow-y: auto;
+  }
+
+  .logo {
+    margin-bottom: 18px;
   }
 
   .logo h1 {
-    font-size: 54px;
+    font-size: 34px;
   }
 
-  .logo h2 {
-    font-size: 18px;
+  .logo h2,
+  .logo p {
+    display: none;
   }
 
   .user-box {
-    margin-bottom: 20px;
+    padding: 10px 6px;
+    margin-bottom: 18px;
+    border-radius: 16px;
+  }
+
+  .user-box span {
+    display: none;
+  }
+
+  .user-box strong {
+    font-size: 10px;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .user-box button {
+    padding: 8px 10px;
+    font-size: 11px;
+    border-radius: 10px;
   }
 
   nav {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
   nav button {
-    margin-bottom: 0;
+    width: 100%;
+    height: 54px;
+    padding: 8px;
+    margin: 0;
+    font-size: 0;
+    border-radius: 16px;
     text-align: center;
-    padding: 13px 10px;
-    font-size: 13px;
+    position: relative;
   }
 
+  nav button::before {
+    font-size: 22px;
+    display: block;
+    line-height: 1;
+  }
+
+  nav button:nth-child(1)::before { content: "🏠"; }
+  nav button:nth-child(2)::before { content: "💰"; }
+  nav button:nth-child(3)::before { content: "📉"; }
+  nav button:nth-child(4)::before { content: "🏦"; }
+  nav button:nth-child(5)::before { content: "🎯"; }
+  nav button:nth-child(6)::before { content: "📊"; }
+  nav button:nth-child(7)::before { content: "🏷️"; }
+  nav button:nth-child(8)::before { content: "🧠"; }
+  nav button:nth-child(9)::before { content: "📋"; }
+  nav button:nth-child(10)::before { content: "📥"; }
+  nav button:nth-child(11)::before { content: "👥"; }
+
   .main {
-    padding: 22px 16px;
+    flex: 1;
+    width: calc(100vw - 86px);
+    padding: 18px 14px;
+    overflow-x: hidden;
   }
 
   .topbar {
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
+    margin-bottom: 20px;
   }
 
   .topbar h1 {
-    font-size: 28px;
+    font-size: 30px;
+    line-height: 1.1;
   }
 
   .topbar p {
@@ -890,21 +946,24 @@ th {
 
   #filtroMes {
     width: 100%;
+    padding: 14px;
+    text-align: center;
   }
 
   .cards,
-  .cards-tarefas,
-  .cards-financeiro {
+  .cards-financeiro,
+  .cards-tarefas {
     grid-template-columns: 1fr !important;
     gap: 14px;
   }
 
   .card {
     padding: 20px;
+    border-radius: 22px;
   }
 
   .card h2 {
-    font-size: 26px;
+    font-size: 27px;
   }
 
   .grid {
@@ -914,7 +973,7 @@ th {
 
   .panel {
     padding: 20px;
-    border-radius: 20px;
+    border-radius: 22px;
   }
 
   .form-panel input,
@@ -922,6 +981,7 @@ th {
   .form-panel textarea {
     padding: 14px;
     font-size: 14px;
+    border-radius: 14px;
   }
 
   .form-panel button,
@@ -933,11 +993,12 @@ th {
   .table-area {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    border-radius: 18px;
   }
 
   table,
   .monday-table {
-    min-width: 900px;
+    min-width: 980px;
   }
 
   th,
@@ -946,13 +1007,17 @@ th {
     font-size: 13px;
   }
 
+  .monday-table tbody td {
+    padding: 14px 12px;
+  }
+
   .login-card {
     width: 92%;
     padding: 30px 24px;
   }
 
   .login-card h1 {
-    font-size: 70px;
+    font-size: 72px;
   }
 
   .login-card input,
@@ -962,10 +1027,16 @@ th {
 
   .inbox-card {
     grid-template-columns: 10px 1fr;
+    gap: 12px;
+    padding: 16px;
   }
 
   .inbox-tag {
     grid-column: 2;
     width: fit-content;
+  }
+
+  .categorias {
+    grid-template-columns: 1fr !important;
   }
 }
