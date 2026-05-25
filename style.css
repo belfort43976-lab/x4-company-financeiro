@@ -828,3 +828,144 @@ th {
     width: 92%;
   }
 } 
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    padding: 24px 18px;
+    border-right: none;
+    border-bottom: 1px solid #00d9ff;
+  }
+
+  .logo h1 {
+    font-size: 54px;
+  }
+
+  .logo h2 {
+    font-size: 18px;
+  }
+
+  .user-box {
+    margin-bottom: 20px;
+  }
+
+  nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  nav button {
+    margin-bottom: 0;
+    text-align: center;
+    padding: 13px 10px;
+    font-size: 13px;
+  }
+
+  .main {
+    padding: 22px 16px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .topbar h1 {
+    font-size: 28px;
+  }
+
+  .topbar p {
+    font-size: 14px;
+  }
+
+  #filtroMes {
+    width: 100%;
+  }
+
+  .cards,
+  .cards-tarefas,
+  .cards-financeiro {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .card h2 {
+    font-size: 26px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+
+  .panel {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .form-panel input,
+  .form-panel select,
+  .form-panel textarea {
+    padding: 14px;
+    font-size: 14px;
+  }
+
+  .form-panel button,
+  .ia-panel button {
+    padding: 15px;
+    font-size: 15px;
+  }
+
+  .table-area {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table,
+  .monday-table {
+    min-width: 900px;
+  }
+
+  th,
+  td {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .login-card {
+    width: 92%;
+    padding: 30px 24px;
+  }
+
+  .login-card h1 {
+    font-size: 70px;
+  }
+
+  .login-card input,
+  .login-card button {
+    padding: 15px;
+  }
+
+  .inbox-card {
+    grid-template-columns: 10px 1fr;
+  }
+
+  .inbox-tag {
+    grid-column: 2;
+    width: fit-content;
+  }
+}
