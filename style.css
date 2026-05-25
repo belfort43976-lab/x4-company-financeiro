@@ -829,214 +829,117 @@ th {
   }
 } 
 @media (max-width: 768px) {
-  body {
-    overflow-x: hidden;
-  }
-
-  .app {
-    display: none;
-    flex-direction: row;
-    min-height: 100vh;
-  }
-
-  .sidebar {
-    width: 86px;
-    min-width: 86px;
-    min-height: 100vh;
-    padding: 16px 10px;
-    position: sticky;
-    top: 0;
-    border-right: 1px solid #00d9ff;
-    border-bottom: none;
-    overflow-y: auto;
-  }
-
-  .logo {
-    margin-bottom: 18px;
-  }
-
-  .logo h1 {
-    font-size: 34px;
-  }
-
-  .logo h2,
-  .logo p {
-    display: none;
-  }
-
-  .user-box {
-    padding: 10px 6px;
-    margin-bottom: 18px;
-    border-radius: 16px;
-  }
-
-  .user-box span {
-    display: none;
-  }
-
-  .user-box strong {
-    font-size: 10px;
-    line-height: 1.2;
-    word-break: break-word;
-  }
-
-  .user-box button {
-    padding: 8px 10px;
-    font-size: 11px;
-    border-radius: 10px;
-  }
-
-  nav {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  nav button {
-    width: 100%;
-    height: 54px;
-    padding: 8px;
-    margin: 0;
-    font-size: 0;
-    border-radius: 16px;
-    text-align: center;
-    position: relative;
-  }
-
-  nav button::before {
-    font-size: 22px;
-    display: block;
-    line-height: 1;
-  }
-
-  nav button:nth-child(1)::before { content: "🏠"; }
-  nav button:nth-child(2)::before { content: "💰"; }
-  nav button:nth-child(3)::before { content: "📉"; }
-  nav button:nth-child(4)::before { content: "🏦"; }
-  nav button:nth-child(5)::before { content: "🎯"; }
-  nav button:nth-child(6)::before { content: "📊"; }
-  nav button:nth-child(7)::before { content: "🏷️"; }
-  nav button:nth-child(8)::before { content: "🧠"; }
-  nav button:nth-child(9)::before { content: "📋"; }
-  nav button:nth-child(10)::before { content: "📥"; }
-  nav button:nth-child(11)::before { content: "👥"; }
-
   .main {
-    flex: 1;
-    width: calc(100vw - 86px);
-    padding: 18px 14px;
-    overflow-x: hidden;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 20px;
+    padding: 18px 12px;
   }
 
   .topbar h1 {
-    font-size: 30px;
-    line-height: 1.1;
+    font-size: 24px;
   }
 
   .topbar p {
-    font-size: 14px;
-  }
-
-  #filtroMes {
-    width: 100%;
-    padding: 14px;
-    text-align: center;
-  }
-
-  .cards,
-  .cards-financeiro,
-  .cards-tarefas {
-    grid-template-columns: 1fr !important;
-    gap: 14px;
-  }
-
-  .card {
-    padding: 20px;
-    border-radius: 22px;
-  }
-
-  .card h2 {
-    font-size: 27px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr !important;
-    gap: 16px;
-  }
-
-  .panel {
-    padding: 20px;
-    border-radius: 22px;
-  }
-
-  .form-panel input,
-  .form-panel select,
-  .form-panel textarea {
-    padding: 14px;
-    font-size: 14px;
-    border-radius: 14px;
-  }
-
-  .form-panel button,
-  .ia-panel button {
-    padding: 15px;
-    font-size: 15px;
-  }
-
-  .table-area {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 18px;
-  }
-
-  table,
-  .monday-table {
-    min-width: 980px;
-  }
-
-  th,
-  td {
-    padding: 12px;
     font-size: 13px;
   }
 
-  .monday-table tbody td {
-    padding: 14px 12px;
+  #filtroMes {
+    padding: 11px;
+    font-size: 13px;
   }
 
-  .login-card {
-    width: 92%;
-    padding: 30px 24px;
+  .cards-tarefas {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
   }
 
-  .login-card h1 {
-    font-size: 72px;
+  .cards-tarefas .card {
+    min-height: auto;
+    padding: 14px;
+    border-radius: 16px;
   }
 
-  .login-card input,
-  .login-card button {
-    padding: 15px;
+  .cards-tarefas .card span {
+    font-size: 11px;
   }
 
-  .inbox-card {
-    grid-template-columns: 10px 1fr;
-    gap: 12px;
+  .cards-tarefas .card h2 {
+    font-size: 22px;
+    margin: 8px 0;
+  }
+
+  .cards-tarefas .card small {
+    font-size: 11px;
+  }
+
+  #tarefas .grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #tarefas .form-panel {
+    order: -1;
+  }
+
+  #tarefas .ia-panel {
+    order: 2;
+  }
+
+  #tarefas .monday-panel {
+    order: 1;
+  }
+
+  #tarefas .panel {
     padding: 16px;
+    border-radius: 18px;
   }
 
+  #tarefas .panel h3 {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  #tarefas input,
+  #tarefas select,
+  #tarefas textarea {
+    padding: 12px;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  #tarefas textarea {
+    min-height: 80px;
+  }
+
+  #tarefas button {
+    padding: 13px;
+    font-size: 14px;
+  }
+
+  .monday-table {
+    min-width: 760px;
+  }
+
+  .task-title {
+    font-size: 13px;
+  }
+
+  .task-note {
+    font-size: 11px;
+  }
+
+  .avatar-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .status,
   .inbox-tag {
-    grid-column: 2;
-    width: fit-content;
+    padding: 6px 8px;
+    font-size: 10px;
   }
 
-  .categorias {
-    grid-template-columns: 1fr !important;
+  .btn-small {
+    padding: 6px 8px;
+    font-size: 11px;
   }
 }
