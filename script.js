@@ -22,7 +22,14 @@ let metas = JSON.parse(localStorage.getItem("x4_metas")) || {
 let grafico;
 
 const filtroMes = document.getElementById("filtroMes");
-filtroMes.value = new Date().toISOString().slice(0, 7);
+
+if (filtroMes) {
+  filtroMes.value = new Date().toISOString().slice(0, 7);
+}
+
+/* =========================
+   LOGIN
+========================= */
 
 function fazerLogin() {
   const usuario = document.getElementById("loginUsuario").value.trim();
@@ -43,6 +50,7 @@ function fazerLogin() {
 
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("appSistema").style.display = "flex";
+
   document.getElementById("usuarioCargo").innerText =
     `${usuarioLogado.usuario} (${usuarioLogado.cargo})`;
 
@@ -72,6 +80,10 @@ function sairSistema() {
   document.getElementById("appSistema").style.display = "none";
 }
 
+/* =========================
+   PERMISSÕES
+========================= */
+
 function temAcessoFinanceiro() {
   return usuarioLogado && (
     usuarioLogado.cargo === "ADM" ||
@@ -90,9 +102,10 @@ function temAcessoMarketing() {
 
 function aplicarPermissoes() {
   document.querySelectorAll(".area-admin").forEach(area => {
-    area.style.display = usuarioLogado && usuarioLogado.cargo === "ADM"
-      ? "block"
-      : "none";
+    area.style.display =
+      usuarioLogado && usuarioLogado.cargo === "ADM"
+        ? "block"
+        : "none";
   });
 
   document.querySelectorAll(".menu-financeiro").forEach(item => {
@@ -107,6 +120,10 @@ function aplicarPermissoes() {
     item.style.display = temAcessoFinanceiro() ? "grid" : "none";
   });
 }
+
+/* =========================
+   HELPERS
+========================= */
 
 function moeda(valor) {
   return valor.toLocaleString("pt-BR", {
@@ -132,8 +149,110 @@ function salvarMetasStorage() {
 }
 
 function dadosDoMes() {
+  if (!filtroMes) return transacoes;
   return transacoes.filter(item => item.mes === filtroMes.value);
 }
+
+/* =========================
+   NAVEGAÇÃO
+========================= */
+
+function abrirPagina(pagina, botao) {
+  if (
+    ["dashboard", "entradas", "saidas", "caixa", "metas", "relatorios", "categorias", "ia"].includes(pagina) &&
+    !temAcessoFinanceiro()
+  ) {
+    alert("Você não tem acesso ao setor financeiro.");
+    return;
+  }
+
+  if (["tarefas", "inbox"].includes(pagina) && !temAcessoMarketing()) {
+    alert("Você não tem acesso ao setor de Marketing/Tarefas.");
+    return;
+  }
+
+  if (pagina === "usuarios" && (!usuarioLogado || usuarioLogado.cargo !== "ADM")) {
+    alert("Apenas ADM pode acessar usuários.");
+    return;
+  }
+
+  document.querySelectorAll(".pagina").forEach(secao => {
+    secao.classList.remove("ativa");
+  });
+
+  const paginaElemento = document.getElementById(pagina);
+  if (paginaElemento) {
+    paginaElemento.classList.add("ativa");
+  }
+
+  document.querySelectorAll("nav button").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  if (botao) {
+    botao.classList.add("active");
+  }
+
+  const titulos = {
+    dashboard: ["Dashboard Financeiro", "Visão geral da X4 Company"],
+    entradas: ["Entradas", "Controle de valores que entram na empresa"],
+    saidas: ["Saídas", "Controle de custos, despesas e pagamentos"],
+    caixa: ["Caixa", "Dinheiro disponível e saldo financeiro"],
+    metas: ["Metas", "Configure e acompanhe o faturamento da empresa"],
+    relatorios: ["Relatórios", "Resumo completo do desempenho financeiro"],
+    categorias: ["Categorias", "Organização por tipo de lançamento"],
+    ia: ["IA Financeira", "Resumo inteligente do financeiro da X4 Company"],
+    tarefas: ["Marketing / Tarefas", "Gestão operacional do time de marketing"],
+    inbox: ["Caixa de Entrada", "Lembretes automáticos e alertas de prazo"],
+    usuarios: ["Usuários", "Cadastro e controle de permissões do sistema"]
+  };
+
+  document.getElementById("tituloPagina").innerText = titulos[pagina][0];
+  document.getElementById("subtituloPagina").innerText = titulos[pagina][1];
+
+  const cardsFinanceiro = document.querySelector(".cards-financeiro");
+
+  if (cardsFinanceiro) {
+    cardsFinanceiro.style.display =
+      ["dashboard", "entradas", "saidas", "caixa", "metas", "relatorios", "categorias", "ia"].includes(pagina)
+        ? "grid"
+        : "none";
+  }
+
+  renderizar();
+
+  if (pagina === "tarefas") renderizarTarefas();
+  if (pagina === "inbox") renderizarInbox();
+  if (pagina === "usuarios") renderizarUsuarios();
+
+  if (window.innerWidth <= 768) {
+    setTimeout(() => {
+      if (pagina === "tarefas") {
+        const formulario = document.querySelector("#tarefas .form-panel");
+
+        if (formulario) {
+          formulario.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      } else {
+        const titulo = document.getElementById("tituloPagina");
+
+        if (titulo) {
+          titulo.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      }
+    }, 150);
+  }
+}
+
+/* =========================
+   FINANCEIRO
+========================= */
 
 function adicionarLancamento() {
   if (!temAcessoFinanceiro()) {
@@ -158,7 +277,7 @@ function adicionarLancamento() {
     valor,
     categoria,
     data: new Date().toLocaleDateString("pt-BR"),
-    mes: filtroMes.value,
+    mes: filtroMes ? filtroMes.value : new Date().toISOString().slice(0, 7),
     criadoPor: usuarioLogado ? usuarioLogado.usuario : "Sistema"
   });
 
@@ -211,71 +330,6 @@ function excluirLancamento(id) {
   renderizar();
 }
 
-function abrirPagina(pagina, botao) {
-  if (
-    ["dashboard", "entradas", "saidas", "caixa", "metas", "relatorios", "categorias", "ia"].includes(pagina) &&
-    !temAcessoFinanceiro()
-  ) {
-    alert("Você não tem acesso ao setor financeiro.");
-    return;
-  }
-
-  if (["tarefas", "inbox"].includes(pagina) && !temAcessoMarketing()) {
-    alert("Você não tem acesso ao setor de Marketing/Tarefas.");
-    return;
-  }
-
-  if (pagina === "usuarios" && (!usuarioLogado || usuarioLogado.cargo !== "ADM")) {
-    alert("Apenas ADM pode acessar usuários.");
-    return;
-  }
-
-  document.querySelectorAll(".pagina").forEach(secao => {
-    secao.classList.remove("ativa");
-  });
-
-  document.getElementById(pagina).classList.add("ativa");
-
-  document.querySelectorAll("nav button").forEach(btn => {
-    btn.classList.remove("active");
-  });
-
-  if (botao) {
-    botao.classList.add("active");
-  }
-
-  const titulos = {
-    dashboard: ["Dashboard Financeiro", "Visão geral da X4 Company"],
-    entradas: ["Entradas", "Controle de valores que entram na empresa"],
-    saidas: ["Saídas", "Controle de custos, despesas e pagamentos"],
-    caixa: ["Caixa", "Dinheiro disponível e saldo financeiro"],
-    metas: ["Metas", "Configure e acompanhe o faturamento da empresa"],
-    relatorios: ["Relatórios", "Resumo completo do desempenho financeiro"],
-    categorias: ["Categorias", "Organização por tipo de lançamento"],
-    ia: ["IA Financeira", "Resumo inteligente do financeiro da X4 Company"],
-    tarefas: ["Marketing / Tarefas", "Gestão operacional do time de marketing"],
-    inbox: ["Caixa de Entrada", "Lembretes automáticos e alertas de prazo"],
-    usuarios: ["Usuários", "Cadastro e controle de permissões do sistema"]
-  };
-
-  document.getElementById("tituloPagina").innerText = titulos[pagina][0];
-  document.getElementById("subtituloPagina").innerText = titulos[pagina][1];
-
-  const cardsFinanceiro = document.querySelector(".cards-financeiro");
-  if (cardsFinanceiro) {
-    cardsFinanceiro.style.display =
-      ["dashboard", "entradas", "saidas", "caixa", "metas", "relatorios", "categorias", "ia"].includes(pagina)
-        ? "grid"
-        : "none";
-  }
-
-  renderizar();
-
-  if (pagina === "tarefas") renderizarTarefas();
-  if (pagina === "inbox") renderizarInbox();
-  if (pagina === "usuarios") renderizarUsuarios();
-}
-
 function calcularResumo() {
   const dados = dadosDoMes();
 
@@ -297,19 +351,33 @@ function renderizar() {
 
   const { dados, entradas, saidas, saldo } = calcularResumo();
 
-  document.getElementById("totalEntradas").innerText = moeda(entradas);
-  document.getElementById("totalSaidas").innerText = moeda(saidas);
-  document.getElementById("saldoAtual").innerText = moeda(saldo);
-  document.getElementById("caixaAtual").innerText = moeda(saldo);
+  const totalEntradas = document.getElementById("totalEntradas");
+  const totalSaidas = document.getElementById("totalSaidas");
+  const saldoAtual = document.getElementById("saldoAtual");
+  const caixaAtual = document.getElementById("caixaAtual");
 
-  document.getElementById("caixaEntradas").innerText = moeda(entradas);
-  document.getElementById("caixaSaidas").innerText = moeda(saidas);
-  document.getElementById("caixaDisponivel").innerText = moeda(saldo);
+  if (totalEntradas) totalEntradas.innerText = moeda(entradas);
+  if (totalSaidas) totalSaidas.innerText = moeda(saidas);
+  if (saldoAtual) saldoAtual.innerText = moeda(saldo);
+  if (caixaAtual) caixaAtual.innerText = moeda(saldo);
 
-  document.getElementById("relEntradas").innerText = moeda(entradas);
-  document.getElementById("relSaidas").innerText = moeda(saidas);
-  document.getElementById("relSaldo").innerText = moeda(saldo);
-  document.getElementById("relTransacoes").innerText = dados.length;
+  const caixaEntradas = document.getElementById("caixaEntradas");
+  const caixaSaidas = document.getElementById("caixaSaidas");
+  const caixaDisponivel = document.getElementById("caixaDisponivel");
+
+  if (caixaEntradas) caixaEntradas.innerText = moeda(entradas);
+  if (caixaSaidas) caixaSaidas.innerText = moeda(saidas);
+  if (caixaDisponivel) caixaDisponivel.innerText = moeda(saldo);
+
+  const relEntradas = document.getElementById("relEntradas");
+  const relSaidas = document.getElementById("relSaidas");
+  const relSaldo = document.getElementById("relSaldo");
+  const relTransacoes = document.getElementById("relTransacoes");
+
+  if (relEntradas) relEntradas.innerText = moeda(entradas);
+  if (relSaidas) relSaidas.innerText = moeda(saidas);
+  if (relSaldo) relSaldo.innerText = moeda(saldo);
+  if (relTransacoes) relTransacoes.innerText = dados.length;
 
   renderizarTabela("listaTransacoes", dados, true);
   renderizarTabela("listaEntradas", dados.filter(item => item.tipo === "entrada"), false);
@@ -319,7 +387,6 @@ function renderizar() {
   preencherInputsMetas();
   criarGrafico(entradas, saidas, saldo);
 }
-
 function renderizarTabela(idTabela, dados, comAcao) {
   const tabela = document.getElementById(idTabela);
   if (!tabela) return;
@@ -366,14 +433,13 @@ function renderizarTabela(idTabela, dados, comAcao) {
 }
 
 function preencherInputsMetas() {
-  document.getElementById("inputMetaFaturamento").placeholder =
-    `Meta atual: ${moeda(metas.faturamento)}`;
+  const metaFat = document.getElementById("inputMetaFaturamento");
+  const metaCustos = document.getElementById("inputMetaCustos");
+  const metaLucro = document.getElementById("inputMetaLucro");
 
-  document.getElementById("inputMetaCustos").placeholder =
-    `Limite atual: ${moeda(metas.custos)}`;
-
-  document.getElementById("inputMetaLucro").placeholder =
-    `Meta atual: ${moeda(metas.lucro)}`;
+  if (metaFat) metaFat.placeholder = `Meta atual: ${moeda(metas.faturamento)}`;
+  if (metaCustos) metaCustos.placeholder = `Limite atual: ${moeda(metas.custos)}`;
+  if (metaLucro) metaLucro.placeholder = `Meta atual: ${moeda(metas.lucro)}`;
 }
 
 function atualizarMetas(entradas, saidas, saldo) {
@@ -381,33 +447,59 @@ function atualizarMetas(entradas, saidas, saldo) {
   const percCustos = Math.min((saidas / metas.custos) * 100, 100);
   const percLucro = Math.min((saldo / metas.lucro) * 100, 100);
 
-  document.getElementById("textoMetaFaturamento").innerText =
-    `Meta: ${moeda(metas.faturamento)}`;
+  const textoMetaFaturamento = document.getElementById("textoMetaFaturamento");
+  const textoMetaCustos = document.getElementById("textoMetaCustos");
+  const textoMetaLucro = document.getElementById("textoMetaLucro");
 
-  document.getElementById("textoMetaCustos").innerText =
-    `Limite: ${moeda(metas.custos)}`;
+  const metaFaturamento = document.getElementById("metaFaturamento");
+  const barraFaturamento = document.getElementById("barraFaturamento");
 
-  document.getElementById("textoMetaLucro").innerText =
-    `Meta: ${moeda(metas.lucro)}`;
+  const metaCustos = document.getElementById("metaCustos");
+  const barraCustos = document.getElementById("barraCustos");
 
-  document.getElementById("metaFaturamento").innerText =
-    `${percFaturamento.toFixed(0)}%`;
+  const metaLucro = document.getElementById("metaLucro");
+  const barraLucro = document.getElementById("barraLucro");
 
-  document.getElementById("barraFaturamento").style.width =
-    `${percFaturamento}%`;
+  if (textoMetaFaturamento) {
+    textoMetaFaturamento.innerText = `Meta: ${moeda(metas.faturamento)}`;
+  }
 
-  document.getElementById("metaCustos").innerText =
-    `${percCustos.toFixed(0)}%`;
+  if (textoMetaCustos) {
+    textoMetaCustos.innerText = `Limite: ${moeda(metas.custos)}`;
+  }
 
-  document.getElementById("barraCustos").style.width =
-    `${percCustos}%`;
+  if (textoMetaLucro) {
+    textoMetaLucro.innerText = `Meta: ${moeda(metas.lucro)}`;
+  }
 
-  document.getElementById("metaLucro").innerText =
-    `${Math.max(percLucro, 0).toFixed(0)}%`;
+  if (metaFaturamento) {
+    metaFaturamento.innerText = `${percFaturamento.toFixed(0)}%`;
+  }
 
-  document.getElementById("barraLucro").style.width =
-    `${Math.max(percLucro, 0)}%`;
+  if (barraFaturamento) {
+    barraFaturamento.style.width = `${percFaturamento}%`;
+  }
+
+  if (metaCustos) {
+    metaCustos.innerText = `${percCustos.toFixed(0)}%`;
+  }
+
+  if (barraCustos) {
+    barraCustos.style.width = `${percCustos}%`;
+  }
+
+  if (metaLucro) {
+    metaLucro.innerText = `${Math.max(percLucro, 0).toFixed(0)}%`;
+  }
+
+  if (barraLucro) {
+    barraLucro.style.width = `${Math.max(percLucro, 0)}%`;
+  }
 }
+
+/* =========================
+   IA FINANCEIRA
+========================= */
 
 function gerarResumoIA() {
   const { dados, entradas, saidas, saldo } = calcularResumo();
@@ -422,41 +514,96 @@ function gerarResumoIA() {
 
   let texto = `
     <h4>Análise Inteligente da X4 Company</h4>
-    <p>No mês selecionado, a empresa registrou <strong>${moeda(entradas)}</strong> em faturamento.</p>
-    <p>As despesas somaram <strong>${moeda(saidas)}</strong>, deixando saldo líquido de <strong>${moeda(saldo)}</strong>.</p>
-    <p>Foram registradas <strong>${dados.length}</strong> movimentações financeiras.</p>
+
+    <p>
+      No mês selecionado, a empresa registrou
+      <strong>${moeda(entradas)}</strong> em faturamento.
+    </p>
+
+    <p>
+      As despesas somaram
+      <strong>${moeda(saidas)}</strong>, deixando saldo líquido de
+      <strong>${moeda(saldo)}</strong>.
+    </p>
+
+    <p>
+      Foram registradas
+      <strong>${dados.length}</strong> movimentações financeiras.
+    </p>
   `;
 
   if (maiorEntrada) {
-    texto += `<p>A maior entrada foi <strong>${maiorEntrada.descricao}</strong>, no valor de <strong>${moeda(maiorEntrada.valor)}</strong>.</p>`;
+    texto += `
+      <p>
+        A maior entrada foi <strong>${maiorEntrada.descricao}</strong>,
+        no valor de <strong>${moeda(maiorEntrada.valor)}</strong>.
+      </p>
+    `;
   }
 
   if (maiorSaida) {
-    texto += `<p>A maior saída foi <strong>${maiorSaida.descricao}</strong>, no valor de <strong>${moeda(maiorSaida.valor)}</strong>.</p>`;
+    texto += `
+      <p>
+        A maior saída foi <strong>${maiorSaida.descricao}</strong>,
+        no valor de <strong>${moeda(maiorSaida.valor)}</strong>.
+      </p>
+    `;
   }
 
   if (saldo > 0) {
-    texto += `<p class="positivo">Diagnóstico: a empresa está fechando o mês com resultado positivo.</p>`;
+    texto += `
+      <p class="positivo">
+        Diagnóstico: a empresa está fechando o mês com resultado positivo.
+      </p>
+    `;
   } else if (saldo < 0) {
-    texto += `<p class="negativo">Diagnóstico: a empresa está fechando o mês no negativo. Recomendo revisar despesas.</p>`;
+    texto += `
+      <p class="negativo">
+        Diagnóstico: a empresa está fechando o mês no negativo.
+        Recomendo revisar despesas, custos fixos e ferramentas.
+      </p>
+    `;
   } else {
-    texto += `<p>Diagnóstico: a empresa está empatada no mês.</p>`;
+    texto += `
+      <p>
+        Diagnóstico: a empresa está empatada no mês.
+      </p>
+    `;
   }
 
   if (entradas >= metas.faturamento) {
-    texto += `<p class="positivo">A meta de faturamento foi atingida ou superada.</p>`;
+    texto += `
+      <p class="positivo">
+        A meta de faturamento foi atingida ou superada.
+      </p>
+    `;
   } else {
-    texto += `<p>Ainda faltam <strong>${moeda(metas.faturamento - entradas)}</strong> para bater a meta de faturamento.</p>`;
+    texto += `
+      <p>
+        Ainda faltam <strong>${moeda(metas.faturamento - entradas)}</strong>
+        para bater a meta de faturamento.
+      </p>
+    `;
   }
 
   if (saidas > metas.custos) {
-    texto += `<p class="negativo">Atenção: as despesas ultrapassaram o limite definido para o mês.</p>`;
+    texto += `
+      <p class="negativo">
+        Atenção: as despesas ultrapassaram o limite definido para o mês.
+      </p>
+    `;
   }
 
-  document.getElementById("resumoIA").innerHTML = texto;
+  const box = document.getElementById("resumoIA");
+
+  if (box) {
+    box.innerHTML = texto;
+  }
 }
 
-/* MARKETING / TAREFAS */
+/* =========================
+   MARKETING / TAREFAS
+========================= */
 
 function carregarResponsaveis() {
   const select = document.getElementById("tarefaResponsavel");
@@ -465,9 +612,17 @@ function carregarResponsaveis() {
   select.innerHTML = `<option value="">Selecione o responsável</option>`;
 
   usuarios
-    .filter(user => user.acesso === "MARKETING" || user.acesso === "TODOS" || user.cargo === "ADM")
+    .filter(user =>
+      user.acesso === "MARKETING" ||
+      user.acesso === "TODOS" ||
+      user.cargo === "ADM"
+    )
     .forEach(user => {
-      select.innerHTML += `<option value="${user.usuario}">${user.usuario} - ${user.cargo}</option>`;
+      select.innerHTML += `
+        <option value="${user.usuario}">
+          ${user.usuario} - ${user.cargo}
+        </option>
+      `;
     });
 }
 
@@ -557,347 +712,330 @@ async function adicionarTarefa() {
   document.getElementById("tarefaPrazo").value = "";
   document.getElementById("tarefaTempoAcao").value = "";
   document.getElementById("tarefaObservacao").value = "";
-  document.getElementById("tarefaArquivos").value = "";
+
+  if (inputArquivos) {
+    inputArquivos.value = "";
+  }
 
   renderizarTarefas();
   renderizarInbox();
 }
-
-function tarefaEstaAtrasada(tarefa) {
-  if (tarefa.status === "Concluído") return false;
-
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  const prazo = new Date(tarefa.prazo + "T00:00:00");
-  return prazo < hoje;
-}
-
-function diasAtePrazo(tarefa) {
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  const prazo = new Date(tarefa.prazo + "T00:00:00");
-  const diferenca = prazo - hoje;
-
-  return Math.ceil(diferenca / (1000 * 60 * 60 * 24));
-}
-
-function textoLembrete(tarefa) {
-  if (tarefa.status === "Concluído") {
-    return "Concluída";
-  }
-
-  const dias = diasAtePrazo(tarefa);
-
-  if (dias < 0) return `Atrasada há ${Math.abs(dias)} dia(s)`;
-  if (dias === 0) return "Vence hoje";
-  if (dias === 1) return "Vence amanhã";
-  if (dias <= 3) return `Vence em ${dias} dias`;
-
-  return "Dentro do prazo";
-}
-
-function classeInbox(tarefa) {
-  if (tarefa.status === "Concluído") return "inbox-ok";
-
-  const dias = diasAtePrazo(tarefa);
-
-  if (dias < 0) return "inbox-atrasado";
-  if (dias === 0) return "inbox-hoje";
-  if (dias === 1) return "inbox-amanha";
-  if (dias <= 3) return "inbox-breve";
-
-  return "inbox-ok";
-}
-
-function classeStatus(tarefa) {
-  if (tarefaEstaAtrasada(tarefa)) return "status-atrasado";
-  if (tarefa.status === "Pendente") return "status-pendente";
-  if (tarefa.status === "Em andamento") return "status-andamento";
-  if (tarefa.status === "Aguardando aprovação") return "status-aprovacao";
-  if (tarefa.status === "Concluído") return "status-concluido";
-  return "status-pendente";
-}
-
-function classePrioridade(prioridade) {
-  if (prioridade === "Baixa") return "prioridade-baixa";
-  if (prioridade === "Média") return "prioridade-media";
-  if (prioridade === "Alta") return "prioridade-alta";
-  if (prioridade === "Urgente") return "prioridade-urgente";
-  return "prioridade-baixa";
-}
-
-function formatarData(data) {
-  if (!data) return "-";
-  const partes = data.split("-");
-  if (partes.length !== 3) return data;
-  return `${partes[2]}/${partes[1]}/${partes[0]}`;
-}
-
-function iniciais(nome) {
-  if (!nome) return "?";
-  return nome
-    .split(" ")
-    .map(parte => parte[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase();
-}
-
-function renderizarAnexos(anexos) {
-  if (!anexos || anexos.length === 0) {
-    return "-";
-  }
-
-  return `
-    <div class="anexos-list">
-      ${anexos.map((anexo, index) => `
-        <span class="anexo-chip" onclick="abrirAnexo('${anexo.dataUrl}')">
-          ${iconeAnexo(anexo.tipo)} ${anexo.nome.length > 14 ? anexo.nome.substring(0, 14) + "..." : anexo.nome}
-        </span>
-      `).join("")}
-    </div>
-  `;
-}
-
-function iconeAnexo(tipo) {
-  if (tipo.startsWith("image")) return "🖼️";
-  if (tipo.startsWith("video")) return "🎬";
-  if (tipo.includes("pdf")) return "📄";
-  return "📎";
-}
-
-function abrirAnexo(dataUrl) {
-  const novaAba = window.open();
-  novaAba.document.write(`
-    <iframe src="${dataUrl}" style="width:100%;height:100vh;border:none;"></iframe>
-  `);
-}
-
 function renderizarTarefas() {
-  const lista = document.getElementById("listaTarefas");
-  if (!lista) return;
+  const tabela = document.getElementById("listaTarefas");
+  if (!tabela) return;
 
-  lista.innerHTML = "";
+  tabela.innerHTML = "";
 
-  const pendentes = tarefas.filter(t => t.status === "Pendente" && !tarefaEstaAtrasada(t)).length;
-  const andamento = tarefas.filter(t => t.status === "Em andamento" && !tarefaEstaAtrasada(t)).length;
-  const atrasadas = tarefas.filter(t => tarefaEstaAtrasada(t)).length;
+  const pendente = tarefas.filter(t => t.status === "Pendente").length;
+  const andamento = tarefas.filter(t => t.status === "Em andamento").length;
+  const atrasadas = tarefas.filter(t =>
+    new Date(t.prazo) < new Date() &&
+    t.status !== "Concluído"
+  ).length;
   const concluidas = tarefas.filter(t => t.status === "Concluído").length;
 
-  document.getElementById("totalTarefasPendentes").innerText = pendentes;
-  document.getElementById("totalTarefasAndamento").innerText = andamento;
-  document.getElementById("totalTarefasAtrasadas").innerText = atrasadas;
-  document.getElementById("totalTarefasConcluidas").innerText = concluidas;
+  const cardPendente = document.getElementById("cardPendente");
+  const cardAndamento = document.getElementById("cardAndamento");
+  const cardAtrasadas = document.getElementById("cardAtrasadas");
+  const cardConcluidas = document.getElementById("cardConcluidas");
+
+  if (cardPendente) cardPendente.innerText = pendente;
+  if (cardAndamento) cardAndamento.innerText = andamento;
+  if (cardAtrasadas) cardAtrasadas.innerText = atrasadas;
+  if (cardConcluidas) cardConcluidas.innerText = concluidas;
 
   if (tarefas.length === 0) {
-    lista.innerHTML = `
+    tabela.innerHTML = `
       <tr>
-        <td colspan="11" class="empty">Nenhuma tarefa cadastrada.</td>
+        <td colspan="20">
+          Nenhuma tarefa cadastrada.
+        </td>
       </tr>
     `;
     return;
   }
 
-  tarefas.slice().reverse().forEach(tarefa => {
-    const statusVisual = tarefaEstaAtrasada(tarefa) ? "Atrasado" : tarefa.status;
+  tarefas
+    .slice()
+    .reverse()
+    .forEach(tarefa => {
 
-    lista.innerHTML += `
-      <tr>
-        <td>
-          <span class="task-title">${tarefa.titulo}</span>
-          <span class="task-note">${tarefa.observacao || ""}</span>
-        </td>
+      const iniciais = tarefa.responsavel
+        ? tarefa.responsavel
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase()
+        : "--";
 
-        <td>${tarefa.cliente || "-"}</td>
+      const anexosHtml =
+        tarefa.anexos && tarefa.anexos.length > 0
+          ? `
+            <div class="anexos-list">
+              ${tarefa.anexos.map((arquivo, index) => `
+                <span
+                  class="anexo-chip"
+                  onclick="abrirAnexo(${tarefa.id}, ${index})"
+                >
+                  📎 ${arquivo.nome}
+                </span>
+              `).join("")}
+            </div>
+          `
+          : "Sem anexos";
 
-        <td>
-          <div class="avatar-user">
-            <span class="avatar-circle">${iniciais(tarefa.responsavel)}</span>
-            <span>${tarefa.responsavel}</span>
-          </div>
-        </td>
+      tabela.innerHTML += `
+        <tr>
 
-        <td>
-          <span class="status ${classeStatus(tarefa)}">${statusVisual}</span>
-        </td>
+          <td>
+            <strong class="task-title">
+              ${tarefa.titulo}
+            </strong>
 
-        <td>
-          <span class="prioridade ${classePrioridade(tarefa.prioridade)}">${tarefa.prioridade}</span>
-        </td>
+            <span class="task-note">
+              ${tarefa.observacao || "Sem observação"}
+            </span>
+          </td>
 
-        <td>${formatarData(tarefa.data)}</td>
-        <td>${formatarData(tarefa.prazo)}</td>
+          <td>
+            ${tarefa.cliente || "-"}
+          </td>
 
-        <td>
-          <span class="status ${classeStatus(tarefa)}">${textoLembrete(tarefa)}</span>
-        </td>
+          <td>
+            <div class="avatar-user">
+              <div class="avatar-circle">
+                ${iniciais}
+              </div>
 
-        <td>${tarefa.tempoAcao || "-"}</td>
+              ${tarefa.responsavel}
+            </div>
+          </td>
 
-        <td>${renderizarAnexos(tarefa.anexos)}</td>
+          <td>
+            <span class="prioridade prioridade-${tarefa.prioridade.toLowerCase()}">
+              ${tarefa.prioridade}
+            </span>
+          </td>
 
-        <td>
-          <button class="btn-small btn-edit" onclick="mudarStatusTarefa(${tarefa.id}, 'Em andamento')">Andamento</button>
-          <button class="btn-small btn-done" onclick="mudarStatusTarefa(${tarefa.id}, 'Concluído')">Concluir</button>
-          <button class="btn-small btn-danger" onclick="excluirTarefa(${tarefa.id})">Excluir</button>
-        </td>
-      </tr>
-    `;
-  });
+          <td>
+            <span class="status status-${tarefa.status.toLowerCase().replace(" ", "-")}">
+              ${tarefa.status}
+            </span>
+          </td>
+
+          <td>
+            ${tarefa.data || "-"}
+          </td>
+
+          <td>
+            ${tarefa.prazo}
+          </td>
+
+          <td>
+            ${tarefa.tempoAcao || "-"}
+          </td>
+
+          <td>
+            ${anexosHtml}
+          </td>
+
+          <td>
+            <button
+              class="btn-small btn-done"
+              onclick="concluirTarefa(${tarefa.id})"
+            >
+              Concluir
+            </button>
+
+            <button
+              class="btn-small btn-delete"
+              onclick="excluirTarefa(${tarefa.id})"
+            >
+              Excluir
+            </button>
+          </td>
+
+        </tr>
+      `;
+    });
 }
 
-function renderizarInbox() {
-  const lista = document.getElementById("listaInbox");
-  if (!lista) return;
-
-  const tarefasAtivas = tarefas
-    .filter(tarefa => tarefa.status !== "Concluído")
-    .sort((a, b) => new Date(a.prazo) - new Date(b.prazo));
-
-  lista.innerHTML = "";
-
-  const tarefasImportantes = tarefasAtivas.filter(tarefa => {
-    const dias = diasAtePrazo(tarefa);
-    return dias <= 3;
-  });
-
-  if (tarefasImportantes.length === 0) {
-    lista.innerHTML = `
-      <div class="inbox-card inbox-ok">
-        <div class="inbox-dot"></div>
-        <div>
-          <h4>Nenhum lembrete urgente</h4>
-          <p>Não existem tarefas próximas do prazo ou atrasadas neste momento.</p>
-        </div>
-        <span class="inbox-tag">Tudo certo</span>
-      </div>
-    `;
-    return;
-  }
-
-  tarefasImportantes.forEach(tarefa => {
-    const classe = classeInbox(tarefa);
-
-    lista.innerHTML += `
-      <div class="inbox-card ${classe}">
-        <div class="inbox-dot"></div>
-
-        <div>
-          <h4>${tarefa.titulo}</h4>
-          <p>
-            Cliente: <strong>${tarefa.cliente || "-"}</strong> |
-            Responsável: <strong>${tarefa.responsavel}</strong> |
-            Prazo: <strong>${formatarData(tarefa.prazo)}</strong>
-          </p>
-        </div>
-
-        <span class="inbox-tag">${textoLembrete(tarefa)}</span>
-      </div>
-    `;
-  });
-}
-
-function mudarStatusTarefa(id, novoStatus) {
+function concluirTarefa(id) {
   const tarefa = tarefas.find(t => t.id === id);
+
   if (!tarefa) return;
 
-  tarefa.status = novoStatus;
+  tarefa.status = "Concluído";
+
   salvarTarefas();
   renderizarTarefas();
   renderizarInbox();
 }
 
 function excluirTarefa(id) {
+  if (
+    !usuarioLogado ||
+    usuarioLogado.cargo !== "ADM"
+  ) {
+    alert("Apenas ADM pode excluir tarefas.");
+    return;
+  }
+
   if (!confirm("Deseja excluir esta tarefa?")) return;
 
-  tarefas = tarefas.filter(tarefa => tarefa.id !== id);
+  tarefas = tarefas.filter(t => t.id !== id);
+
   salvarTarefas();
   renderizarTarefas();
   renderizarInbox();
 }
 
-function gerarResumoTarefas() {
-  const total = tarefas.length;
-  const pendentes = tarefas.filter(t => t.status === "Pendente" && !tarefaEstaAtrasada(t)).length;
-  const andamento = tarefas.filter(t => t.status === "Em andamento" && !tarefaEstaAtrasada(t)).length;
-  const atrasadas = tarefas.filter(t => tarefaEstaAtrasada(t)).length;
-  const concluidas = tarefas.filter(t => t.status === "Concluído").length;
-  const urgentes = tarefas.filter(t => t.prioridade === "Urgente").length;
+function abrirAnexo(tarefaId, indexArquivo) {
+  const tarefa = tarefas.find(t => t.id === tarefaId);
 
-  let texto = `
-    <h4>Análise Inteligente do Marketing</h4>
-    <p>O setor possui <strong>${total}</strong> tarefas cadastradas.</p>
-    <p><strong>${pendentes}</strong> tarefas estão pendentes, <strong>${andamento}</strong> em andamento e <strong>${concluidas}</strong> concluídas.</p>
-  `;
+  if (!tarefa) return;
 
-  if (atrasadas > 0) {
-    texto += `<p class="negativo">Atenção: existem <strong>${atrasadas}</strong> tarefas atrasadas. Priorize essas demandas imediatamente.</p>`;
-  } else {
-    texto += `<p class="positivo">Nenhuma tarefa atrasada no momento.</p>`;
-  }
+  const arquivo = tarefa.anexos[indexArquivo];
 
-  if (urgentes > 0) {
-    texto += `<p class="alerta">Existem <strong>${urgentes}</strong> tarefas marcadas como urgentes.</p>`;
-  }
+  if (!arquivo) return;
 
-  const proximoPrazo = tarefas
-    .filter(t => t.status !== "Concluído")
-    .sort((a, b) => new Date(a.prazo) - new Date(b.prazo))[0];
-
-  if (proximoPrazo) {
-    texto += `<p>Próxima demanda crítica: <strong>${proximoPrazo.titulo}</strong>, responsável: <strong>${proximoPrazo.responsavel}</strong>, prazo: <strong>${formatarData(proximoPrazo.prazo)}</strong>.</p>`;
-  }
-
-  document.getElementById("resumoTarefasIA").innerHTML = texto;
+  window.open(arquivo.dataUrl, "_blank");
 }
 
-/* USUÁRIOS */
+/* =========================
+   INBOX / LEMBRETES
+========================= */
 
-function criarUsuario() {
-  if (!usuarioLogado || usuarioLogado.cargo !== "ADM") {
-    alert("Somente ADM pode criar usuários.");
-    return;
-  }
+function renderizarInbox() {
+  const lista = document.getElementById("listaInbox");
+  if (!lista) return;
 
-  const usuario = document.getElementById("novoUsuario").value.trim();
-  const senha = document.getElementById("novaSenha").value.trim();
-  const cargo = document.getElementById("novoCargo").value;
-  const acesso = document.getElementById("novoAcesso").value;
+  lista.innerHTML = "";
 
-  if (!usuario || !senha) {
-    alert("Preencha usuário e senha.");
-    return;
-  }
+  const hoje = new Date();
 
-  const jaExiste = usuarios.some(
-    user => user.usuario.toLowerCase() === usuario.toLowerCase()
+  const tarefasPendentes = tarefas.filter(
+    t => t.status !== "Concluído"
   );
 
-  if (jaExiste) {
-    alert("Esse usuário já existe.");
+  if (tarefasPendentes.length === 0) {
+    lista.innerHTML = `
+      <div class="inbox-card inbox-ok">
+        <div class="inbox-dot"></div>
+
+        <div>
+          <h4>
+            Nenhuma pendência
+          </h4>
+
+          <p>
+            Tudo certo por aqui 😎
+          </p>
+        </div>
+      </div>
+    `;
+
+    return;
+  }
+
+  tarefasPendentes.forEach(tarefa => {
+
+    const prazo = new Date(tarefa.prazo);
+    const diff = Math.ceil(
+      (prazo - hoje) / (1000 * 60 * 60 * 24)
+    );
+
+    let classe = "inbox-breve";
+    let tag = "Próximo";
+
+    if (diff < 0) {
+      classe = "inbox-atrasado";
+      tag = "Atrasado";
+    } else if (diff === 0) {
+      classe = "inbox-hoje";
+      tag = "Hoje";
+    } else if (diff === 1) {
+      classe = "inbox-amanha";
+      tag = "Amanhã";
+    }
+
+    lista.innerHTML += `
+      <div class="inbox-card ${classe}">
+        <div class="inbox-dot"></div>
+
+        <div>
+          <h4>
+            ${tarefa.titulo}
+          </h4>
+
+          <p>
+            Responsável:
+            <strong>${tarefa.responsavel}</strong>
+          </p>
+
+          <p>
+            Prazo:
+            <strong>${tarefa.prazo}</strong>
+          </p>
+        </div>
+
+        <span class="inbox-tag">
+          ${tag}
+        </span>
+      </div>
+    `;
+  });
+}
+
+/* =========================
+   USUÁRIOS
+========================= */
+
+function adicionarUsuario() {
+  if (
+    !usuarioLogado ||
+    usuarioLogado.cargo !== "ADM"
+  ) {
+    alert("Apenas ADM pode criar usuários.");
+    return;
+  }
+
+  const nome =
+    document.getElementById("novoUsuario").value.trim();
+
+  const senha =
+    document.getElementById("novaSenha").value.trim();
+
+  const cargo =
+    document.getElementById("novoCargo").value;
+
+  const acesso =
+    document.getElementById("novoAcesso").value;
+
+  if (!nome || !senha) {
+    alert("Preencha nome e senha.");
     return;
   }
 
   usuarios.push({
-    usuario,
+    usuario: nome,
     senha,
     cargo,
     acesso,
-    permissoes: cargo === "ADM" ? "TOTAL" : "LIMITADO"
+    permissoes:
+      cargo === "ADM" ? "TOTAL" : acesso
   });
 
   salvarUsuarios();
-  carregarResponsaveis();
 
   document.getElementById("novoUsuario").value = "";
   document.getElementById("novaSenha").value = "";
-  document.getElementById("novoCargo").value = "FUNCIONARIO";
-  document.getElementById("novoAcesso").value = "MARKETING";
 
+  carregarResponsaveis();
   renderizarUsuarios();
-  alert("Usuário criado com sucesso!");
+
+  alert("Usuário criado!");
 }
 
 function renderizarUsuarios() {
@@ -909,94 +1047,110 @@ function renderizarUsuarios() {
   usuarios.forEach((user, index) => {
     lista.innerHTML += `
       <div class="user-card">
-        <h4>${user.usuario}</h4>
-        <p>Cargo: ${user.cargo}</p>
-        <p>Acesso: ${user.acesso || "TODOS"}</p>
-        <p>Permissão: ${user.permissoes || "LIMITADO"}</p>
 
-        ${user.usuario === "Leandro Belfort" ? `
-          <small>Usuário principal do sistema</small>
-        ` : `
-          <button onclick="excluirUsuario(${index})">
-            Excluir Usuário
-          </button>
-        `}
+        <h4>
+          ${user.usuario}
+        </h4>
+
+        <p>
+          Cargo:
+          <strong>${user.cargo}</strong>
+        </p>
+
+        <small>
+          Acesso:
+          ${user.acesso}
+        </small>
+
+        ${
+          user.usuario !== "Leandro Belfort"
+            ? `
+              <button
+                class="btn-delete"
+                onclick="excluirUsuario(${index})"
+              >
+                Excluir
+              </button>
+            `
+            : ""
+        }
+
       </div>
     `;
   });
 }
 
 function excluirUsuario(index) {
-  if (!usuarioLogado || usuarioLogado.cargo !== "ADM") {
-    alert("Somente ADM pode excluir usuários.");
-    return;
-  }
-
-  if (usuarios[index].usuario === "Leandro Belfort") {
-    alert("O usuário principal não pode ser excluído.");
-    return;
-  }
-
-  if (!confirm("Deseja excluir este usuário?")) return;
+  if (!confirm("Excluir usuário?")) return;
 
   usuarios.splice(index, 1);
+
   salvarUsuarios();
-  carregarResponsaveis();
   renderizarUsuarios();
+  carregarResponsaveis();
 }
 
-/* GRÁFICO */
+/* =========================
+   GRÁFICO
+========================= */
 
-function criarGrafico(entradas, saidas, saldo) {
-  const ctx = document.getElementById("graficoFinanceiro");
+function criarGrafico(
+  entradas,
+  saidas,
+  saldo
+) {
+  const canvas =
+    document.getElementById("graficoFinanceiro");
 
-  if (!ctx) return;
+  if (!canvas || typeof Chart === "undefined") return;
+
+  const ctx = canvas.getContext("2d");
 
   if (grafico) {
     grafico.destroy();
   }
 
   grafico = new Chart(ctx, {
-    type: "line",
+    type: "bar",
     data: {
-      labels: ["Entradas", "Saídas", "Saldo"],
-      datasets: [{
-        label: "Financeiro X4",
-        data: [entradas, saidas, saldo],
-        borderColor: "#00d9ff",
-        backgroundColor: "rgba(0,217,255,.18)",
-        borderWidth: 4,
-        tension: 0.4,
-        fill: true,
-        pointRadius: 6,
-        pointBackgroundColor: "#00d9ff",
-        pointBorderColor: "#fff"
-      }]
+      labels: [
+        "Entradas",
+        "Saídas",
+        "Saldo"
+      ],
+      datasets: [
+        {
+          label: "Financeiro",
+          data: [
+            entradas,
+            saidas,
+            saldo
+          ],
+          borderWidth: 1
+        }
+      ]
     },
     options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: { color: "#fff" }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#8bbce0" },
-          grid: { color: "rgba(255,255,255,.06)" }
-        },
-        y: {
-          ticks: { color: "#8bbce0" },
-          grid: { color: "rgba(255,255,255,.06)" }
-        }
-      }
+      responsive: true
     }
   });
 }
 
-filtroMes.addEventListener("change", renderizar);
+/* =========================
+   EVENTOS
+========================= */
 
-carregarResponsaveis();
-renderizar();
-renderizarTarefas();
-renderizarInbox();
+if (filtroMes) {
+  filtroMes.addEventListener(
+    "change",
+    () => {
+      renderizar();
+      gerarResumoIA();
+    }
+  );
+}
+
+/* IA AUTOMATICA */
+setTimeout(() => {
+  gerarResumoIA();
+}, 800);
