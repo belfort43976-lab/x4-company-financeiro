@@ -10,7 +10,8 @@ html {
 }
 
 body {
-  background: radial-gradient(circle at top, #071e33 0%, #02040a 45%, #000 100%);
+  background:
+    radial-gradient(circle at top, #071e33 0%, #02040a 45%, #000 100%);
   color: #fff;
   min-height: 100vh;
   overflow-x: hidden;
@@ -29,7 +30,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at top, #071e33 0%, #02040a 45%, #000 100%);
+  background:
+    radial-gradient(circle at top, #071e33 0%, #02040a 45%, #000 100%);
   z-index: 9999;
 }
 
@@ -37,9 +39,19 @@ body {
   width: 420px;
   padding: 40px;
   border-radius: 32px;
-  background: linear-gradient(145deg, rgba(2,12,28,.98), rgba(0,0,0,.98));
+  background:
+    linear-gradient(
+      145deg,
+      rgba(2,12,28,.98),
+      rgba(0,0,0,.98)
+    );
+
   border: 1px solid rgba(0,217,255,.35);
-  box-shadow: 0 0 40px rgba(0,217,255,.15), inset 0 0 30px rgba(0,217,255,.05);
+
+  box-shadow:
+    0 0 40px rgba(0,217,255,.15),
+    inset 0 0 30px rgba(0,217,255,.05);
+
   text-align: center;
 }
 
@@ -47,7 +59,10 @@ body {
   font-size: 90px;
   line-height: 1;
   color: #00d9ff;
-  text-shadow: 0 0 15px #00d9ff, 0 0 45px #0066ff;
+
+  text-shadow:
+    0 0 15px #00d9ff,
+    0 0 45px #0066ff;
 }
 
 .login-card h2 {
@@ -66,8 +81,12 @@ body {
   width: 100%;
   padding: 18px;
   margin-bottom: 18px;
+
   background: rgba(0,5,15,.95);
-  border: 1px solid rgba(0,217,255,.55);
+
+  border:
+    1px solid rgba(0,217,255,.55);
+
   border-radius: 18px;
   color: #fff;
   outline: none;
@@ -78,7 +97,14 @@ body {
   padding: 18px;
   border: none;
   border-radius: 18px;
-  background: linear-gradient(90deg, #1ec9ea, #1b7eff);
+
+  background:
+    linear-gradient(
+      90deg,
+      #1ec9ea,
+      #1b7eff
+    );
+
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;
@@ -103,9 +129,15 @@ body {
   width: 290px;
   min-height: 100vh;
   background: rgba(0,5,15,.96);
-  border-right: 1px solid #00d9ff;
+
+  border-right:
+    1px solid #00d9ff;
+
   padding: 35px 25px;
-  box-shadow: 0 0 35px rgba(0,217,255,.2);
+
+  box-shadow:
+    0 0 35px rgba(0,217,255,.2);
+
   flex-shrink: 0;
 }
 
@@ -118,7 +150,10 @@ body {
   font-size: 72px;
   line-height: 1;
   color: #00d9ff;
-  text-shadow: 0 0 15px #00d9ff, 0 0 45px #0066ff;
+
+  text-shadow:
+    0 0 15px #00d9ff,
+    0 0 45px #0066ff;
 }
 
 .logo h2 {
@@ -133,7 +168,9 @@ body {
 }
 
 .user-box {
-  border: 1px solid rgba(0,217,255,.3);
+  border:
+    1px solid rgba(0,217,255,.3);
+
   border-radius: 20px;
   padding: 18px;
   text-align: center;
@@ -166,10 +203,13 @@ nav button {
   width: 100%;
   padding: 16px;
   margin-bottom: 14px;
+
   background: transparent;
   color: #b8dfff;
+
   border: 1px solid transparent;
   border-radius: 16px;
+
   cursor: pointer;
   text-align: left;
   transition: .3s;
@@ -177,10 +217,18 @@ nav button {
 
 nav button:hover,
 nav button.active {
-  background: linear-gradient(90deg, rgba(0,217,255,.22), transparent);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0,217,255,.22),
+      transparent
+    );
+
   border-color: #00d9ff;
   color: #00d9ff;
-  box-shadow: 0 0 18px rgba(0,217,255,.25);
+
+  box-shadow:
+    0 0 18px rgba(0,217,255,.25);
 }
 
 .menu-marketing.active,
@@ -215,8 +263,13 @@ nav button.active {
 #filtroMes {
   padding: 14px 18px;
   border-radius: 14px;
-  border: 1px solid #00d9ff;
-  background: rgba(0,10,25,.9);
+
+  border:
+    1px solid #00d9ff;
+
+  background:
+    rgba(0,10,25,.9);
+
   color: #fff;
 }
 
@@ -231,10 +284,21 @@ nav button.active {
 
 .card,
 .panel {
-  background: linear-gradient(145deg, rgba(2,12,28,.96), rgba(0,0,0,.96));
-  border: 1px solid rgba(0,217,255,.25);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(2,12,28,.96),
+      rgba(0,0,0,.96)
+    );
+
+  border:
+    1px solid rgba(0,217,255,.25);
+
   border-radius: 26px;
-  box-shadow: inset 0 0 25px rgba(0,217,255,.03), 0 0 20px rgba(0,217,255,.08);
+
+  box-shadow:
+    inset 0 0 25px rgba(0,217,255,.03),
+    0 0 20px rgba(0,217,255,.08);
 }
 
 .card {
@@ -251,15 +315,81 @@ nav button.active {
   margin: 15px 0;
 }
 
-.entrada h2 { color: #00ff88; }
-.saida h2 { color: #ff2f7d; }
-.saldo h2 { color: #9b5cff; }
-.caixa h2 { color: #00d9ff; }
+.entrada h2 {
+  color: #00ff88;
+}
 
-.tarefa-pendente h2 { color: #facc15; }
-.tarefa-andamento h2 { color: #00d9ff; }
-.tarefa-atrasada h2 { color: #ff2f7d; }
-.tarefa-concluida h2 { color: #00ff88; }
+.saida h2 {
+  color: #ff2f7d;
+}
+
+.saldo h2 {
+  color: #9b5cff;
+}
+
+.caixa h2 {
+  color: #00d9ff;
+}
+
+/* NOVOS INDICADORES */
+
+.faturamento-real h2 {
+  color: #00d9ff;
+}
+
+.clientes-ativos h2 {
+  color: #00ff88;
+}
+
+.indicadores-box {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.indicadores-box div {
+  background: rgba(0,10,25,.8);
+  border: 1px solid rgba(0,217,255,.18);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.indicadores-box span {
+  display: block;
+  color: #8fb8d8;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.indicadores-box strong {
+  font-size: 28px;
+  color: #00ff88;
+}
+
+.form-divider {
+  border: none;
+  height: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 20px 0;
+}
+/* TAREFAS */
+
+.tarefa-pendente h2 {
+  color: #facc15;
+}
+
+.tarefa-andamento h2 {
+  color: #00d9ff;
+}
+
+.tarefa-atrasada h2 {
+  color: #ff2f7d;
+}
+
+.tarefa-concluida h2 {
+  color: #00ff88;
+}
 
 /* PÁGINAS */
 
@@ -286,7 +416,7 @@ nav button.active {
   margin-bottom: 20px;
 }
 
-/* FORMS */
+/* FORMULÁRIOS */
 
 .form-panel input,
 .form-panel select,
@@ -294,9 +424,15 @@ nav button.active {
   width: 100%;
   padding: 16px;
   margin-bottom: 14px;
+
   border-radius: 16px;
-  border: 1px solid rgba(0,217,255,.4);
-  background: rgba(0,5,15,.95);
+
+  border:
+    1px solid rgba(0,217,255,.4);
+
+  background:
+    rgba(0,5,15,.95);
+
   color: #fff;
   outline: none;
 }
@@ -319,13 +455,20 @@ nav button.active {
   padding: 18px;
   border: none;
   border-radius: 18px;
-  background: linear-gradient(90deg, #1ec9ea, #1b7eff);
+
+  background:
+    linear-gradient(
+      90deg,
+      #1ec9ea,
+      #1b7eff
+    );
+
   font-size: 17px;
   font-weight: bold;
   cursor: pointer;
 }
 
-/* TABELA */
+/* TABELAS */
 
 .table-area {
   overflow-x: auto;
@@ -341,7 +484,10 @@ th,
 td {
   padding: 16px;
   text-align: left;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+
+  border-bottom:
+    1px solid rgba(255,255,255,.06);
+
   color: #b8dfff;
   vertical-align: top;
 }
@@ -361,6 +507,8 @@ th {
   color: #ff2f7d;
   font-weight: bold;
 }
+
+/* BOTÕES */
 
 .btn-delete,
 .btn-danger {
@@ -388,7 +536,11 @@ th {
   color: #001a10;
 }
 
-/* MONDAY / CRM */
+/* MONDAY STYLE */
+
+.monday-panel {
+  overflow: hidden;
+}
 
 .monday-table {
   border-collapse: separate;
@@ -397,7 +549,7 @@ th {
 }
 
 .monday-table tbody tr {
-  background: rgba(0, 10, 25, .86);
+  background: rgba(0,10,25,.86);
 }
 
 .monday-table tbody td:first-child {
@@ -431,7 +583,14 @@ th {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00d9ff, #9b5cff);
+
+  background:
+    linear-gradient(
+      135deg,
+      #00d9ff,
+      #9b5cff
+    );
+
   color: #000;
   display: inline-flex;
   align-items: center;
@@ -448,9 +607,14 @@ th {
 }
 
 .anexo-chip {
-  border: 1px solid rgba(0,217,255,.28);
-  background: rgba(0,217,255,.08);
+  border:
+    1px solid rgba(0,217,255,.28);
+
+  background:
+    rgba(0,217,255,.08);
+
   color: #b8dfff;
+
   border-radius: 999px;
   padding: 7px 10px;
   font-size: 12px;
@@ -467,8 +631,13 @@ th {
 .inbox-card {
   border-radius: 22px;
   padding: 20px;
-  background: rgba(0, 10, 25, .9);
-  border: 1px solid rgba(0,217,255,.18);
+
+  background:
+    rgba(0,10,25,.9);
+
+  border:
+    1px solid rgba(0,217,255,.18);
+
   display: grid;
   grid-template-columns: 14px 1fr auto;
   gap: 16px;
@@ -495,11 +664,22 @@ th {
   color: #00d9ff;
 }
 
-.inbox-atrasado .inbox-dot { background: #ff2f7d; }
-.inbox-hoje .inbox-dot { background: #facc15; }
+.inbox-atrasado .inbox-dot {
+  background: #ff2f7d;
+}
+
+.inbox-hoje .inbox-dot {
+  background: #facc15;
+}
+
 .inbox-amanha .inbox-dot,
-.inbox-breve .inbox-dot { background: #00d9ff; }
-.inbox-ok .inbox-dot { background: #00ff88; }
+.inbox-breve .inbox-dot {
+  background: #00d9ff;
+}
+
+.inbox-ok .inbox-dot {
+  background: #00ff88;
+}
 
 .inbox-tag {
   border-radius: 999px;
@@ -507,8 +687,7 @@ th {
   font-size: 12px;
   font-weight: bold;
 }
-
-/* METAS / IA */
+/* METAS / RELATÓRIOS */
 
 .relatorio p {
   display: flex;
@@ -547,6 +726,8 @@ th {
   background: linear-gradient(90deg, #00ff88, #00d9ff);
 }
 
+/* IA */
+
 .ia-subtitle {
   color: #8fb8d8;
   margin-bottom: 16px;
@@ -570,9 +751,19 @@ th {
   color: #00ff88;
 }
 
-.positivo { color: #00ff88; }
-.negativo { color: #ff2f7d; }
-.alerta { color: #facc15; }
+.positivo {
+  color: #00ff88;
+}
+
+.negativo {
+  color: #ff2f7d;
+}
+
+.alerta {
+  color: #facc15;
+}
+
+/* CATEGORIAS */
 
 .categorias {
   display: grid;
@@ -586,6 +777,8 @@ th {
   border: 1px solid #00d9ff;
   text-align: center;
 }
+
+/* USUÁRIOS */
 
 .lista-usuarios {
   display: grid;
@@ -652,10 +845,21 @@ th {
   white-space: nowrap;
 }
 
-.prioridade-baixa { color: #8fb8d8; }
-.prioridade-media { color: #00d9ff; }
-.prioridade-alta { color: #facc15; }
-.prioridade-urgente { color: #ff2f7d; }
+.prioridade-baixa {
+  color: #8fb8d8;
+}
+
+.prioridade-media {
+  color: #00d9ff;
+}
+
+.prioridade-alta {
+  color: #facc15;
+}
+
+.prioridade-urgente {
+  color: #ff2f7d;
+}
 
 /* MOBILE PREMIUM */
 
@@ -714,12 +918,18 @@ th {
     padding: 18px;
     border-radius: 22px;
     font-size: 17px;
-    background: rgba(0, 20, 40, 0.85);
+    background: rgba(0,20,40,.85);
   }
 
   .main {
     width: 100%;
     padding: 18px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .topbar h1 {
@@ -734,8 +944,9 @@ th {
 
   .cards,
   .cards-financeiro,
-  .cards-tarefas {
-    grid-template-columns: repeat(2, 1fr) !important;
+  .cards-tarefas,
+  .indicadores-empresa {
+    grid-template-columns: repeat(2,1fr) !important;
     gap: 12px;
   }
 
@@ -805,6 +1016,10 @@ th {
   td {
     padding: 12px;
     font-size: 13px;
+  }
+
+  .indicadores-box {
+    grid-template-columns: 1fr;
   }
 
   .inbox-card {

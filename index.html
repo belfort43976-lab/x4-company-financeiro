@@ -98,6 +98,20 @@
       </div>
     </section>
 
+    <section class="cards indicadores-empresa cards-financeiro">
+      <div class="card faturamento-real">
+        <span>Faturamento Mensal</span>
+        <h2 id="faturamentoEmpresaMes">R$ 0,00</h2>
+        <small>Valor informado pela agência</small>
+      </div>
+
+      <div class="card clientes-ativos">
+        <span>Clientes Ativos</span>
+        <h2 id="clientesAtivosEmpresa">0</h2>
+        <small>Carteira atual da agência</small>
+      </div>
+    </section>
+
     <section class="pagina ativa" id="dashboard">
       <div class="grid">
         <div class="panel form-panel">
@@ -212,11 +226,27 @@
           <input type="number" id="inputMetaCustos" placeholder="Limite máximo de despesas">
           <input type="number" id="inputMetaLucro" placeholder="Meta de lucro líquido">
 
-          <button onclick="salvarMetas()">Salvar Metas</button>
+          <hr class="form-divider">
+
+          <input type="number" id="inputFaturamentoEmpresa" placeholder="Faturamento mensal real da empresa">
+          <input type="number" id="inputClientesAtivos" placeholder="Clientes ativos na agência">
+
+          <button onclick="salvarMetas()">Salvar Metas e Indicadores</button>
         </div>
 
         <div class="panel">
           <h3>Faturamento da Empresa</h3>
+
+          <div class="indicadores-box">
+            <div>
+              <span>Faturamento real do mês</span>
+              <strong id="indicadorFaturamentoEmpresa">R$ 0,00</strong>
+            </div>
+            <div>
+              <span>Clientes ativos</span>
+              <strong id="indicadorClientesAtivos">0</strong>
+            </div>
+          </div>
 
           <div class="meta">
             <div>
@@ -256,6 +286,8 @@
           <p>Total de Entradas <strong id="relEntradas">R$ 0,00</strong></p>
           <p>Total de Saídas <strong id="relSaidas">R$ 0,00</strong></p>
           <p>Saldo Líquido <strong id="relSaldo">R$ 0,00</strong></p>
+          <p>Faturamento Mensal <strong id="relFaturamentoEmpresa">R$ 0,00</strong></p>
+          <p>Clientes Ativos <strong id="relClientesAtivos">0</strong></p>
           <p>Transações <strong id="relTransacoes">0</strong></p>
         </div>
       </div>
@@ -441,6 +473,6 @@
   </main>
 </div>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
