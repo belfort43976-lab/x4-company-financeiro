@@ -73,8 +73,8 @@ if (filtroMes) {
    PRIMEIRO ACESSO ADM
 ========================= */
 
-async function garantirAdminInicial() {
-  const adminRef = doc(db, "usuarios", "admin-leandro-belfort");
+ garantirAdminInicial() {
+  const async functionadminRef = doc(db, "usuarios", "admin-leandro-belfort");
   const adminSnap = await getDoc(adminRef);
 
   if (!adminSnap.exists()) {
@@ -460,53 +460,55 @@ window.abrirPagina = abrirPagina;
    FINANCEIRO
 ========================= */
 
-async function adicionarLancamento() {
-  if (!temAcessoFinanceiro()) {
-    alert("Você não tem acesso ao setor financeiro.");
-    return;
-  }
-
-  const descricao = document.getElementById("descricao").value.trim();
-  const tipo = document.getElementById("tipo").value;
-  const valor = Number(document.getElementById("valor").value);
-  const categoria = document.getElementById("categoria").value;
-
-  if (descricao === "" || valor <= 0) {
-    alert("Preencha descrição e valor corretamente.");
-    return;
-  }
-
-  await addDoc(collection(db, "transacoes"), {
-    descricao,
-    tipo,
-    valor,
-    categoria,
-    data: dataAtualBR(),
-    mes: mesAtual(),
-    criadoPor: usuarioLogado.usuario,
-    criadoEm: new Date().toISOString()
-  });
-
-  document.getElementById("descricao").value = "";
-  document.getElementById("valor").value = "";
-  document.getElementById("tipo").value = "entrada";
-  document.getElementById("categoria").selectedIndex = 0;
-}
-
-window.adicionarLancamento = adicionarLancamento;
-
-async function excluirLancamento(id) {
+async function criarUsuario() {
   if (!ehADM()) {
-    alert("Apenas ADM pode excluir lançamentos.");
+    alert("Apenas ADM pode criar usuários.");
     return;
   }
 
-  if (!confirm("Deseja excluir este lançamento?")) return;
+  const usuario = document.getElementById("novoUsuario").value.trim();
+  const senha = document.getElementById("novaSenha").value.trim();
+  const cargo = document.getElementById("novoCargo").value;
+  const acesso = document.getElementById("novoAcesso").value;
 
-  await deleteDoc(doc(db, "transacoes", id));
+  if (!usuario || !senha) {
+    alert("Preencha nome e senha.");
+    return;
+  }
+
+  if (senha.length < 6) {
+    alert("A senha precisa ter pelo menos 6 caracteres.");
+    return;
+  }
+
+  const email = gerarEmailSistema(usuario);
+
+  try {
+    await createUserWithEmailAndPassword(auth, email, senha);
+
+    await addDoc(collection(db, "usuarios"), {
+      usuario,
+      email,
+      senhaVisual: senha,
+      cargo,
+      acesso,
+      permissoes: acesso === "TODOS" ? "TOTAL" : acesso,
+      criadoPor: usuarioLogado.usuario,
+      criadoEm: new Date().toISOString()
+    });
+
+    document.getElementById("novoUsuario").value = "";
+    document.getElementById("novaSenha").value = "";
+
+    alert("Usuário criado com sucesso!");
+
+  } catch (error) {
+    console.error("Erro ao criar usuário:", error);
+    alert("Erro ao criar usuário: " + error.message);
+  }
 }
 
-window.excluirLancamento = excluirLancamento;
+window.criarUsuario = criarUsuario;
 
 function calcularResumo() {
   const dados = dadosDoMes();
