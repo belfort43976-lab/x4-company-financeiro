@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>X4 Company | Sistema</title>
+  <title>X4 Company | Financeiro</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,7 +13,7 @@
   <div class="login-card">
     <h1>X4</h1>
     <h2>Company</h2>
-    <p>Login do Sistema</p>
+    <p>Sistema Financeiro</p>
 
     <input type="text" id="loginUsuario" placeholder="Usuário">
     <input type="password" id="loginSenha" placeholder="Senha">
@@ -21,11 +21,6 @@
     <button onclick="fazerLogin()">Entrar no Sistema</button>
 
     <small id="loginErro"></small>
-
-    <div class="login-info">
-      <span>ADM: Leandro Belfort</span>
-      <span>Senha: cadastrada no sistema</span>
-    </div>
   </div>
 </div>
 
@@ -35,7 +30,7 @@
     <div class="logo">
       <h1>X4</h1>
       <h2>Company</h2>
-      <p>Sistema</p>
+      <p>Financeiro</p>
     </div>
 
     <div class="user-box">
@@ -45,18 +40,14 @@
     </div>
 
     <nav>
-      <button class="active menu-financeiro" onclick="abrirPagina('dashboard', this)">Dashboard</button>
-      <button class="menu-financeiro" onclick="abrirPagina('entradas', this)">Entradas</button>
-      <button class="menu-financeiro" onclick="abrirPagina('saidas', this)">Saídas</button>
-      <button class="menu-financeiro" onclick="abrirPagina('caixa', this)">Caixa</button>
-      <button class="menu-financeiro" onclick="abrirPagina('metas', this)">Metas</button>
-      <button class="menu-financeiro" onclick="abrirPagina('relatorios', this)">Relatórios</button>
-      <button class="menu-financeiro" onclick="abrirPagina('categorias', this)">Categorias</button>
-      <button class="menu-financeiro" onclick="abrirPagina('ia', this)">IA Financeira</button>
+      <button class="active" onclick="abrirPagina('dashboard', this)">Dashboard</button>
 
-      <button class="menu-marketing" onclick="abrirPagina('tarefas', this)">Marketing / Tarefas</button>
-      <button class="menu-marketing" onclick="abrirPagina('inbox', this)">Caixa de Entrada</button>
-
+      <button class="area-admin" onclick="abrirPagina('entradas', this)">Entradas</button>
+      <button class="area-admin" onclick="abrirPagina('saidas', this)">Saídas</button>
+      <button class="area-admin" onclick="abrirPagina('funcionarios', this)">Funcionários</button>
+      <button class="area-admin" onclick="abrirPagina('metas', this)">Metas</button>
+      <button class="area-admin" onclick="abrirPagina('relatorios', this)">Relatórios</button>
+      <button class="area-admin" onclick="abrirPagina('ia', this)">IA Financeira</button>
       <button class="area-admin" onclick="abrirPagina('usuarios', this)">Usuários</button>
     </nav>
   </aside>
@@ -72,48 +63,60 @@
       <input type="month" id="filtroMes">
     </header>
 
-    <section class="cards cards-financeiro">
-      <div class="card entrada">
-        <span>Entradas</span>
-        <h2 id="totalEntradas">R$ 0,00</h2>
-        <small>Receitas do mês</small>
-      </div>
-
-      <div class="card saida">
-        <span>Saídas</span>
-        <h2 id="totalSaidas">R$ 0,00</h2>
-        <small>Custos e despesas</small>
-      </div>
-
-      <div class="card saldo">
-        <span>Saldo Atual</span>
-        <h2 id="saldoAtual">R$ 0,00</h2>
-        <small>Resultado líquido</small>
-      </div>
-
-      <div class="card caixa">
-        <span>Caixa</span>
-        <h2 id="caixaAtual">R$ 0,00</h2>
-        <small>Disponível agora</small>
-      </div>
-    </section>
-
-    <section class="cards indicadores-empresa cards-financeiro">
+    <section class="cards">
       <div class="card faturamento-real">
-        <span>Faturamento Mensal</span>
-        <h2 id="faturamentoEmpresaMes">R$ 0,00</h2>
-        <small>Valor informado pela agência</small>
+        <span>Faturamento do Mês</span>
+        <h2 id="cardFaturamentoMes">R$ 0,00</h2>
+        <small>Vendas / faturamento atual</small>
+      </div>
+
+      <div class="card mrr">
+        <span>MRR</span>
+        <h2 id="cardMRR">R$ 0,00</h2>
+        <small>Receita recorrente mensal</small>
       </div>
 
       <div class="card clientes-ativos">
         <span>Clientes Ativos</span>
-        <h2 id="clientesAtivosEmpresa">0</h2>
-        <small>Carteira atual da agência</small>
+        <h2 id="cardClientesAtivos">0</h2>
+        <small>Base ativa da agência</small>
+      </div>
+
+      <div class="card saldo area-admin-card">
+        <span>Saldo Atual</span>
+        <h2 id="cardSaldo">R$ 0,00</h2>
+        <small>Entradas - saídas</small>
+      </div>
+    </section>
+
+    <section class="cards area-admin-card">
+      <div class="card entrada">
+        <span>Entradas</span>
+        <h2 id="cardEntradas">R$ 0,00</h2>
+        <small>Receitas lançadas</small>
+      </div>
+
+      <div class="card saida">
+        <span>Saídas</span>
+        <h2 id="cardSaidas">R$ 0,00</h2>
+        <small>Despesas lançadas</small>
+      </div>
+
+      <div class="card funcionarios-card">
+        <span>Folha Funcionários</span>
+        <h2 id="cardFolha">R$ 0,00</h2>
+        <small>Total mensal da equipe</small>
+      </div>
+
+      <div class="card caixa">
+        <span>Caixa Final</span>
+        <h2 id="cardCaixaFinal">R$ 0,00</h2>
+        <small>Saldo após folha</small>
       </div>
     </section>
 
     <section class="pagina ativa" id="dashboard">
-      <div class="grid">
+      <div class="grid area-admin-card">
         <div class="panel form-panel">
           <h3>Novo Lançamento</h3>
 
@@ -139,12 +142,12 @@
         </div>
 
         <div class="panel">
-          <h3>Fluxo de Caixa</h3>
+          <h3>Visão Financeira</h3>
           <canvas id="graficoFinanceiro"></canvas>
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel area-admin-card">
         <h3>Últimas Transações</h3>
 
         <div class="table-area">
@@ -205,52 +208,77 @@
       </div>
     </section>
 
-    <section class="pagina" id="caixa">
-      <div class="panel">
-        <h3>Resumo do Caixa</h3>
+    <section class="pagina" id="funcionarios">
+      <div class="grid">
+        <div class="panel form-panel">
+          <h3>Financeiro de Funcionários</h3>
 
-        <div class="relatorio">
-          <p>Total de Entradas <strong id="caixaEntradas">R$ 0,00</strong></p>
-          <p>Total de Saídas <strong id="caixaSaidas">R$ 0,00</strong></p>
-          <p>Caixa Disponível <strong id="caixaDisponivel">R$ 0,00</strong></p>
+          <input type="text" id="funcNome" placeholder="Nome do funcionário">
+          <input type="text" id="funcCargo" placeholder="Cargo / função">
+          <input type="number" id="funcValor" placeholder="Valor mensal">
+          <input type="date" id="funcDataPagamento">
+
+          <select id="funcStatus">
+            <option value="Pendente">Pendente</option>
+            <option value="Pago">Pago</option>
+          </select>
+
+          <button onclick="adicionarFuncionario()">Salvar Funcionário</button>
+        </div>
+
+        <div class="panel">
+          <h3>Resumo da Folha</h3>
+
+          <div class="relatorio">
+            <p>Total da folha <strong id="totalFolhaFuncionarios">R$ 0,00</strong></p>
+            <p>Funcionários cadastrados <strong id="totalFuncionarios">0</strong></p>
+            <p>Pendentes <strong id="totalFuncionariosPendentes">0</strong></p>
+            <p>Pagos <strong id="totalFuncionariosPagos">0</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Lista de Funcionários</h3>
+
+        <div class="table-area">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Cargo</th>
+                <th>Valor</th>
+                <th>Pagamento</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="listaFuncionarios"></tbody>
+          </table>
         </div>
       </div>
     </section>
 
     <section class="pagina" id="metas">
       <div class="grid">
-        <div class="panel form-panel area-admin">
-          <h3>Configurar Metas do Mês</h3>
+        <div class="panel form-panel">
+          <h3>Configurar Indicadores</h3>
 
-          <input type="number" id="inputMetaFaturamento" placeholder="Meta de faturamento do mês">
-          <input type="number" id="inputMetaCustos" placeholder="Limite máximo de despesas">
-          <input type="number" id="inputMetaLucro" placeholder="Meta de lucro líquido">
+          <input type="number" id="inputFaturamentoMes" placeholder="Faturamento do mês">
+          <input type="number" id="inputMRR" placeholder="Receita recorrente mensal - MRR">
+          <input type="number" id="inputClientesAtivos" placeholder="Clientes ativos">
+          <input type="number" id="inputMetaFaturamento" placeholder="Meta de faturamento">
+          <input type="number" id="inputMetaLucro" placeholder="Meta de lucro">
 
-          <hr class="form-divider">
-
-          <input type="number" id="inputFaturamentoEmpresa" placeholder="Faturamento mensal real da empresa">
-          <input type="number" id="inputClientesAtivos" placeholder="Clientes ativos na agência">
-
-          <button onclick="salvarMetas()">Salvar Metas e Indicadores</button>
+          <button onclick="salvarIndicadores()">Salvar Indicadores</button>
         </div>
 
         <div class="panel">
-          <h3>Faturamento da Empresa</h3>
-
-          <div class="indicadores-box">
-            <div>
-              <span>Faturamento real do mês</span>
-              <strong id="indicadorFaturamentoEmpresa">R$ 0,00</strong>
-            </div>
-            <div>
-              <span>Clientes ativos</span>
-              <strong id="indicadorClientesAtivos">0</strong>
-            </div>
-          </div>
+          <h3>Metas da Empresa</h3>
 
           <div class="meta">
             <div>
-              <strong>Faturamento Mensal</strong>
+              <strong>Meta de Faturamento</strong>
               <p id="textoMetaFaturamento">Meta: R$ 0,00</p>
             </div>
             <span id="metaFaturamento">0%</span>
@@ -259,16 +287,7 @@
 
           <div class="meta">
             <div>
-              <strong>Controle de Despesas</strong>
-              <p id="textoMetaCustos">Limite: R$ 0,00</p>
-            </div>
-            <span id="metaCustos">0%</span>
-          </div>
-          <div class="barra roxa"><div id="barraCustos"></div></div>
-
-          <div class="meta">
-            <div>
-              <strong>Lucro Líquido Desejado</strong>
+              <strong>Meta de Lucro</strong>
               <p id="textoMetaLucro">Meta: R$ 0,00</p>
             </div>
             <span id="metaLucro">0%</span>
@@ -283,27 +302,14 @@
         <h3>Relatório Geral</h3>
 
         <div class="relatorio">
-          <p>Total de Entradas <strong id="relEntradas">R$ 0,00</strong></p>
-          <p>Total de Saídas <strong id="relSaidas">R$ 0,00</strong></p>
-          <p>Saldo Líquido <strong id="relSaldo">R$ 0,00</strong></p>
-          <p>Faturamento Mensal <strong id="relFaturamentoEmpresa">R$ 0,00</strong></p>
-          <p>Clientes Ativos <strong id="relClientesAtivos">0</strong></p>
+          <p>Faturamento do mês <strong id="relFaturamentoMes">R$ 0,00</strong></p>
+          <p>MRR <strong id="relMRR">R$ 0,00</strong></p>
+          <p>Clientes ativos <strong id="relClientesAtivos">0</strong></p>
+          <p>Entradas lançadas <strong id="relEntradas">R$ 0,00</strong></p>
+          <p>Saídas lançadas <strong id="relSaidas">R$ 0,00</strong></p>
+          <p>Folha funcionários <strong id="relFolha">R$ 0,00</strong></p>
+          <p>Saldo final <strong id="relSaldoFinal">R$ 0,00</strong></p>
           <p>Transações <strong id="relTransacoes">0</strong></p>
-        </div>
-      </div>
-    </section>
-
-    <section class="pagina" id="categorias">
-      <div class="panel">
-        <h3>Categorias Financeiras</h3>
-
-        <div class="categorias">
-          <div>Cliente</div>
-          <div>Tráfego Pago</div>
-          <div>Funcionário</div>
-          <div>Ferramenta</div>
-          <div>Imposto</div>
-          <div>Outros</div>
         </div>
       </div>
     </section>
@@ -312,7 +318,7 @@
       <div class="panel ia-panel">
         <h3>IA Financeira X4</h3>
         <p class="ia-subtitle">
-          Análise inteligente automática do financeiro da empresa.
+          Análise automática do faturamento, MRR, clientes, entradas, saídas e folha.
         </p>
 
         <button onclick="gerarResumoIA()">Gerar Resumo Inteligente</button>
@@ -323,147 +329,23 @@
       </div>
     </section>
 
-    <section class="pagina" id="tarefas">
-      <div class="cards cards-tarefas">
-        <div class="card tarefa-pendente">
-          <span>Pendentes</span>
-          <h2 id="totalTarefasPendentes">0</h2>
-          <small>Tarefas abertas</small>
-        </div>
-
-        <div class="card tarefa-andamento">
-          <span>Em andamento</span>
-          <h2 id="totalTarefasAndamento">0</h2>
-          <small>Em execução</small>
-        </div>
-
-        <div class="card tarefa-atrasada">
-          <span>Atrasadas</span>
-          <h2 id="totalTarefasAtrasadas">0</h2>
-          <small>Passaram do prazo</small>
-        </div>
-
-        <div class="card tarefa-concluida">
-          <span>Concluídas</span>
-          <h2 id="totalTarefasConcluidas">0</h2>
-          <small>Finalizadas</small>
-        </div>
-      </div>
-
-      <div class="grid">
-        <div class="panel form-panel">
-          <h3>Nova Tarefa de Marketing</h3>
-
-          <input type="text" id="tarefaTitulo" placeholder="Nome da tarefa">
-          <input type="text" id="tarefaCliente" placeholder="Cliente / Projeto">
-
-          <select id="tarefaResponsavel"></select>
-
-          <select id="tarefaPrioridade">
-            <option value="Baixa">Prioridade Baixa</option>
-            <option value="Média">Prioridade Média</option>
-            <option value="Alta">Prioridade Alta</option>
-            <option value="Urgente">Urgente</option>
-          </select>
-
-          <select id="tarefaStatus">
-            <option value="Pendente">Pendente</option>
-            <option value="Em andamento">Em andamento</option>
-            <option value="Aguardando aprovação">Aguardando aprovação</option>
-            <option value="Concluído">Concluído</option>
-          </select>
-
-          <label>Data da tarefa</label>
-          <input type="date" id="tarefaData">
-
-          <label>Prazo final</label>
-          <input type="date" id="tarefaPrazo">
-
-          <input type="text" id="tarefaTempoAcao" placeholder="Tempo de ação. Ex: 2h, 1 dia, 30 min">
-
-          <label>Anexos da tarefa</label>
-          <input type="file" id="tarefaArquivos" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
-
-          <textarea id="tarefaObservacao" placeholder="Observações da tarefa"></textarea>
-
-          <button onclick="adicionarTarefa()">Salvar Tarefa</button>
-        </div>
-
-        <div class="panel ia-panel">
-          <h3>IA de Tarefas</h3>
-          <p class="ia-subtitle">
-            Resumo automático do setor de marketing.
-          </p>
-
-          <button onclick="gerarResumoTarefas()">Gerar Resumo das Tarefas</button>
-
-          <div id="resumoTarefasIA" class="ia-box">
-            Clique no botão acima para gerar a análise das tarefas.
-          </div>
-        </div>
-      </div>
-
-      <div class="panel monday-panel">
-        <h3>Lista de Tarefas</h3>
-
-        <div class="table-area">
-          <table class="monday-table">
-            <thead>
-              <tr>
-                <th>Tarefa</th>
-                <th>Cliente</th>
-                <th>Responsável</th>
-                <th>Status</th>
-                <th>Prioridade</th>
-                <th>Data</th>
-                <th>Prazo</th>
-                <th>Lembrete</th>
-                <th>Tempo</th>
-                <th>Anexos</th>
-                <th>Ação</th>
-              </tr>
-            </thead>
-            <tbody id="listaTarefas"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="pagina" id="inbox">
-      <div class="panel inbox-panel">
-        <h3>Caixa de Entrada</h3>
-        <p class="ia-subtitle">
-          Lembretes automáticos baseados nos prazos das tarefas.
-        </p>
-
-        <div id="listaInbox" class="inbox-list"></div>
-      </div>
-    </section>
-
     <section class="pagina" id="usuarios">
       <div class="grid">
-        <div class="panel form-panel area-admin">
+        <div class="panel form-panel">
           <h3>Cadastrar Usuário</h3>
 
           <input type="text" id="novoUsuario" placeholder="Nome do usuário">
           <input type="password" id="novaSenha" placeholder="Senha do usuário">
 
           <select id="novoCargo">
-            <option value="FUNCIONARIO">Funcionário</option>
-            <option value="GERENTE">Gerente</option>
+            <option value="USUARIO">Usuário Vendas</option>
             <option value="ADM">ADM</option>
-          </select>
-
-          <select id="novoAcesso">
-            <option value="MARKETING">Acesso Marketing/Tarefas</option>
-            <option value="FINANCEIRO">Acesso Financeiro</option>
-            <option value="TODOS">Acesso Total</option>
           </select>
 
           <button onclick="criarUsuario()">Criar Usuário</button>
         </div>
 
-        <div class="panel area-admin">
+        <div class="panel">
           <h3>Usuários do Sistema</h3>
           <div id="listaUsuarios" class="lista-usuarios"></div>
         </div>
