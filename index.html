@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>X4 Company | Financeiro</title>
+  <title>X4 Company | CEO Financeiro</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,7 +13,7 @@
   <div class="login-card">
     <h1>X4</h1>
     <h2>Company</h2>
-    <p>Sistema Financeiro</p>
+    <p>CEO Financial System</p>
 
     <input type="text" id="loginUsuario" placeholder="Usuário">
     <input type="password" id="loginSenha" placeholder="Senha">
@@ -39,13 +39,12 @@
     </div>
 
     <nav>
-      <button class="active" onclick="abrirPagina('dashboard', this)">Dashboard</button>
-
-      <button class="area-admin" onclick="abrirPagina('entradas', this)">Entradas</button>
-      <button class="area-admin" onclick="abrirPagina('saidas', this)">Saídas</button>
+      <button class="active" onclick="abrirPagina('dashboard', this)">Dashboard CEO</button>
+      <button class="area-admin" onclick="abrirPagina('faturamento', this)">Faturamento</button>
+      <button class="area-admin" onclick="abrirPagina('clientes', this)">Clientes</button>
       <button class="area-admin" onclick="abrirPagina('funcionarios', this)">Funcionários</button>
+      <button class="area-admin" onclick="abrirPagina('lancamentos', this)">Lançamentos</button>
       <button class="area-admin" onclick="abrirPagina('metas', this)">Metas</button>
-      <button class="area-admin" onclick="abrirPagina('relatorios', this)">Relatórios</button>
       <button class="area-admin" onclick="abrirPagina('ia', this)">IA Financeira</button>
       <button class="area-admin" onclick="abrirPagina('usuarios', this)">Usuários</button>
     </nav>
@@ -55,149 +54,164 @@
 
     <header class="topbar">
       <div>
-        <h1 id="tituloPagina">Dashboard Financeiro</h1>
-        <p id="subtituloPagina">Visão geral da X4 Company</p>
+        <h1 id="tituloPagina">Dashboard CEO</h1>
+        <p id="subtituloPagina">Controle financeiro executivo da X4 Company</p>
       </div>
 
       <input type="month" id="filtroMes">
     </header>
 
-    <section class="cards">
-      <div class="card faturamento-real">
-        <span>Faturamento do Mês</span>
-        <h2 id="cardFaturamentoMes">R$ 0,00</h2>
-        <small>Vendas realizadas no mês</small>
+    <section class="ceo-hero">
+      <div>
+        <span>Visão executiva</span>
+        <h2>Performance financeira em tempo real</h2>
+        <p>Faturamento, meta, MRR, clientes ativos, caixa e projeção inteligente em uma única tela.</p>
       </div>
 
-      <div class="card meta-mes">
+      <button class="hero-btn area-admin" onclick="abrirPagina('ia', document.querySelector('[onclick*=ia]'))">
+        Gerar análise IA
+      </button>
+    </section>
+
+    <section class="cards ceo-cards">
+      <div class="card kpi-card faturamento-real card-click" onclick="abrirPagina('faturamento', document.querySelector('[onclick*=faturamento]'))">
+        <span>Faturamento</span>
+        <h2 id="cardFaturamentoMes">R$ 0,00</h2>
+        <small id="cardFaturamentoStatus">Vendas realizadas no mês</small>
+      </div>
+
+      <div class="card kpi-card meta-mes card-click" onclick="abrirPagina('faturamento', document.querySelector('[onclick*=faturamento]'))">
         <span>Meta do Mês</span>
         <h2 id="cardMetaMes">R$ 0,00</h2>
-        <small>Objetivo mensal da agência</small>
+        <small id="cardMetaStatus">Objetivo mensal</small>
       </div>
 
-      <div class="card mrr adm-only">
+      <div class="card kpi-card mrr adm-only card-click" onclick="abrirPagina('clientes', document.querySelector('[onclick*=clientes]'))">
         <span>MRR</span>
         <h2 id="cardMRR">R$ 0,00</h2>
-        <small>Receita recorrente mensal</small>
+        <small>Receita recorrente automática</small>
       </div>
 
-      <div class="card clientes-ativos adm-only">
+      <div class="card kpi-card clientes-ativos adm-only card-click" onclick="abrirPagina('clientes', document.querySelector('[onclick*=clientes]'))">
         <span>Clientes Ativos</span>
         <h2 id="cardClientesAtivos">0</h2>
-        <small>Carteira atual da agência</small>
+        <small>Carteira ativa da agência</small>
       </div>
     </section>
 
     <section class="cards area-admin-card">
       <div class="card entrada">
-        <span>Entradas</span>
+        <span>Receitas Lançadas</span>
         <h2 id="cardEntradas">R$ 0,00</h2>
-        <small>Receitas lançadas</small>
+        <small>Entradas operacionais</small>
       </div>
 
       <div class="card saida">
-        <span>Saídas</span>
+        <span>Despesas</span>
         <h2 id="cardSaidas">R$ 0,00</h2>
-        <small>Despesas lançadas</small>
+        <small>Custos operacionais</small>
       </div>
 
       <div class="card funcionarios-card">
-        <span>Folha Funcionários</span>
+        <span>Folha</span>
         <h2 id="cardFolha">R$ 0,00</h2>
-        <small>Total mensal da equipe</small>
+        <small>Equipe e colaboradores</small>
       </div>
 
       <div class="card caixa">
         <span>Caixa Final</span>
         <h2 id="cardCaixaFinal">R$ 0,00</h2>
-        <small>Saldo após folha</small>
+        <small>Saldo após despesas</small>
       </div>
     </section>
 
     <section class="pagina ativa" id="dashboard">
-      <div class="grid area-admin-card">
-        <div class="panel form-panel">
-          <h3>Novo Lançamento</h3>
+      <div class="grid">
+        <div class="panel area-admin-card">
+          <h3>Mapa financeiro</h3>
+          <canvas id="graficoFinanceiro"></canvas>
+        </div>
 
-          <input type="text" id="descricao" placeholder="Descrição">
+        <div class="panel ceo-panel">
+          <h3>Radar CEO</h3>
 
-          <select id="tipo">
-            <option value="entrada">Entrada</option>
-            <option value="saida">Saída</option>
-          </select>
+          <div class="ceo-radar">
+            <p>Meta atingida <strong id="radarMeta">0%</strong></p>
+            <p>Faltam para meta <strong id="radarFaltaMeta">R$ 0,00</strong></p>
+            <p>Ticket médio <strong id="radarTicketMedio">R$ 0,00</strong></p>
+            <p>Projeção do mês <strong id="radarProjecao">R$ 0,00</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-          <input type="number" id="valor" placeholder="Valor">
+    <section class="pagina" id="faturamento">
+      <div class="grid">
+        <div class="panel form-panel area-admin">
+          <h3>Atualizar Faturamento</h3>
 
-          <select id="categoria">
-            <option value="Receita">Receita</option>
-            <option value="Despesa">Despesa</option>
-            <option value="Funcionário">Funcionário</option>
-            <option value="Outros">Outros</option>
-          </select>
+          <input type="number" id="inputFaturamentoMes" placeholder="Faturamento do mês">
+          <input type="number" id="inputMetaFaturamento" placeholder="Meta de faturamento">
 
-          <button onclick="adicionarLancamento()">Salvar Lançamento</button>
+          <button onclick="salvarIndicadores()">Salvar Faturamento</button>
         </div>
 
         <div class="panel">
-          <h3>Visão Financeira</h3>
-          <canvas id="graficoFinanceiro"></canvas>
+          <h3>Faturamento do Mês</h3>
+
+          <div class="relatorio">
+            <p>Faturamento atual <strong id="detalheFaturamento">R$ 0,00</strong></p>
+            <p>Meta do mês <strong id="detalheMeta">R$ 0,00</strong></p>
+            <p>Meta atingida <strong id="detalhePercentualMeta">0%</strong></p>
+            <p>Faltam para bater <strong id="detalheFaltaMeta">R$ 0,00</strong></p>
+          </div>
+
+          <div class="barra"><div id="barraFaturamento"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pagina" id="clientes">
+      <div class="grid">
+        <div class="panel form-panel area-admin">
+          <h3>Cadastrar Cliente</h3>
+
+          <input type="text" id="clienteNome" placeholder="Nome do cliente">
+          <input type="number" id="clienteValor" placeholder="Valor mensal do contrato">
+
+          <select id="clienteStatus">
+            <option value="Ativo">Ativo</option>
+            <option value="Inativo">Inativo</option>
+          </select>
+
+          <button onclick="adicionarCliente()">Salvar Cliente</button>
+        </div>
+
+        <div class="panel">
+          <h3>Resumo dos Clientes</h3>
+
+          <div class="relatorio">
+            <p>Clientes ativos <strong id="resumoClientesAtivos">0</strong></p>
+            <p>MRR automático <strong id="resumoMRR">R$ 0,00</strong></p>
+            <p>Ticket médio MRR <strong id="resumoTicketMRR">R$ 0,00</strong></p>
+          </div>
         </div>
       </div>
 
-      <div class="panel area-admin-card">
-        <h3>Últimas Transações</h3>
+      <div class="panel">
+        <h3>Carteira de Clientes</h3>
 
         <div class="table-area">
           <table>
             <thead>
               <tr>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Tipo</th>
-                <th>Valor</th>
-                <th>Data</th>
+                <th>Cliente</th>
+                <th>Valor Mensal</th>
+                <th>Status</th>
                 <th>Ação</th>
               </tr>
             </thead>
-            <tbody id="listaTransacoes"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="pagina" id="entradas">
-      <div class="panel">
-        <h3>Todas as Entradas</h3>
-        <div class="table-area">
-          <table>
-            <thead>
-              <tr>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Valor</th>
-                <th>Data</th>
-              </tr>
-            </thead>
-            <tbody id="listaEntradas"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="pagina" id="saidas">
-      <div class="panel">
-        <h3>Todas as Saídas</h3>
-        <div class="table-area">
-          <table>
-            <thead>
-              <tr>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Valor</th>
-                <th>Data</th>
-              </tr>
-            </thead>
-            <tbody id="listaSaidas"></tbody>
+            <tbody id="listaClientes"></tbody>
           </table>
         </div>
       </div>
@@ -223,6 +237,7 @@
 
         <div class="panel">
           <h3>Resumo da Folha</h3>
+
           <div class="relatorio">
             <p>Total da folha <strong id="totalFolhaFuncionarios">R$ 0,00</strong></p>
             <p>Funcionários cadastrados <strong id="totalFuncionarios">0</strong></p>
@@ -234,6 +249,7 @@
 
       <div class="panel">
         <h3>Lista de Funcionários</h3>
+
         <div class="table-area">
           <table>
             <thead>
@@ -252,57 +268,71 @@
       </div>
     </section>
 
-    <section class="pagina" id="metas">
+    <section class="pagina" id="lancamentos">
       <div class="grid">
         <div class="panel form-panel">
-          <h3>Configurar Indicadores</h3>
+          <h3>Novo Lançamento</h3>
 
-          <input type="number" id="inputFaturamentoMes" placeholder="Faturamento do mês">
-          <input type="number" id="inputMRR" placeholder="Receita recorrente mensal - MRR">
-          <input type="number" id="inputClientesAtivos" placeholder="Clientes ativos">
-          <input type="number" id="inputMetaFaturamento" placeholder="Meta de faturamento">
-          <input type="number" id="inputMetaLucro" placeholder="Meta de lucro">
+          <input type="text" id="descricao" placeholder="Descrição">
 
-          <button onclick="salvarIndicadores()">Salvar Indicadores</button>
+          <select id="tipo">
+            <option value="entrada">Faturamento</option>
+            <option value="saida">Despesa</option>
+          </select>
+
+          <input type="number" id="valor" placeholder="Valor">
+
+          <select id="categoria">
+            <option value="Faturamento">Faturamento</option>
+            <option value="Despesa">Despesa</option>
+            <option value="Funcionário">Funcionário</option>
+            <option value="Outros">Outros</option>
+          </select>
+
+          <button onclick="adicionarLancamento()">Salvar Lançamento</button>
         </div>
 
         <div class="panel">
-          <h3>Metas da Empresa</h3>
+          <h3>Últimos Lançamentos</h3>
 
-          <div class="meta">
-            <div>
-              <strong>Meta de Faturamento</strong>
-              <p id="textoMetaFaturamento">Meta: R$ 0,00</p>
-            </div>
-            <span id="metaFaturamento">0%</span>
+          <div class="table-area">
+            <table>
+              <thead>
+                <tr>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Tipo</th>
+                  <th>Valor</th>
+                  <th>Data</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody id="listaTransacoes"></tbody>
+            </table>
           </div>
-          <div class="barra"><div id="barraFaturamento"></div></div>
-
-          <div class="meta">
-            <div>
-              <strong>Meta de Lucro</strong>
-              <p id="textoMetaLucro">Meta: R$ 0,00</p>
-            </div>
-            <span id="metaLucro">0%</span>
-          </div>
-          <div class="barra verde"><div id="barraLucro"></div></div>
         </div>
       </div>
     </section>
 
-    <section class="pagina" id="relatorios">
-      <div class="panel">
-        <h3>Relatório Geral</h3>
+    <section class="pagina" id="metas">
+      <div class="grid">
+        <div class="panel form-panel">
+          <h3>Configurar Metas</h3>
 
-        <div class="relatorio">
-          <p>Faturamento do mês <strong id="relFaturamentoMes">R$ 0,00</strong></p>
-          <p>MRR <strong id="relMRR">R$ 0,00</strong></p>
-          <p>Clientes ativos <strong id="relClientesAtivos">0</strong></p>
-          <p>Entradas lançadas <strong id="relEntradas">R$ 0,00</strong></p>
-          <p>Saídas lançadas <strong id="relSaidas">R$ 0,00</strong></p>
-          <p>Folha funcionários <strong id="relFolha">R$ 0,00</strong></p>
-          <p>Saldo final <strong id="relSaldoFinal">R$ 0,00</strong></p>
-          <p>Transações <strong id="relTransacoes">0</strong></p>
+          <input type="number" id="inputMetaLucro" placeholder="Meta de lucro líquido">
+          <button onclick="salvarIndicadores()">Salvar Meta</button>
+        </div>
+
+        <div class="panel">
+          <h3>Meta de Lucro</h3>
+
+          <div class="relatorio">
+            <p>Meta de lucro <strong id="textoMetaLucro">R$ 0,00</strong></p>
+            <p>Lucro atual <strong id="detalheLucroAtual">R$ 0,00</strong></p>
+            <p>Meta atingida <strong id="metaLucro">0%</strong></p>
+          </div>
+
+          <div class="barra verde"><div id="barraLucro"></div></div>
         </div>
       </div>
     </section>
@@ -310,9 +340,7 @@
     <section class="pagina" id="ia">
       <div class="panel ia-panel">
         <h3>IA Financeira X4</h3>
-        <p class="ia-subtitle">
-          Análise automática do faturamento, MRR, clientes, entradas, saídas e folha.
-        </p>
+        <p class="ia-subtitle">Análise automática da saúde financeira da empresa.</p>
 
         <button onclick="gerarResumoIA()">Gerar Resumo Inteligente</button>
 

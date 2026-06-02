@@ -1,6 +1,6 @@
 /* =========================
    FIREBASE X4 COMPANY
-   SISTEMA 100% FINANCEIRO
+   CEO FINANCIAL SYSTEM
 ========================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -10,7 +10,6 @@ import {
   collection,
   doc,
   setDoc,
-  getDoc,
   getDocs,
   addDoc,
   updateDoc,
@@ -31,15 +30,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* =========================
+   ESTADO GLOBAL
+========================= */
+
 let usuarioLogado = null;
+
 let usuarios = [];
 let transacoes = [];
 let funcionarios = [];
+let clientes = [];
 
 let indicadores = {
   faturamentoMes: 0,
-  mrr: 0,
-  clientesAtivos: 0,
   metaFaturamento: 50000,
   metaLucro: 20000
 };
@@ -49,6 +52,7 @@ let grafico = null;
 let unsubscribeUsuarios = null;
 let unsubscribeTransacoes = null;
 let unsubscribeFuncionarios = null;
+let unsubscribeClientes = null;
 let unsubscribeIndicadores = null;
 
 const filtroMes = document.getElementById("filtroMes");
@@ -57,7 +61,9 @@ if (filtroMes) {
   filtroMes.value = new Date().toISOString().slice(0, 7);
 }
 
-/* USUÁRIOS PADRÃO */
+/* =========================
+   USUÁRIOS PADRÃO
+========================= */
 
 const usuariosPadrao = [
   {
@@ -111,7 +117,9 @@ async function garantirUsuariosPadrao() {
 
 garantirUsuariosPadrao();
 
-/* HELPERS */
+/* =========================
+   HELPERS
+========================= */
 
 function moeda(valor) {
   return Number(valor || 0).toLocaleString("pt-BR", {
@@ -144,7 +152,58 @@ function funcionariosDoMes() {
   return funcionarios.filter(item => item.mes === mesAtual());
 }
 
-/* LOGIN */
+function clientesAtivos() {
+  return clientes.filter(cliente => cliente.status === "Ativo");
+}
+
+function calcularMRR() {
+  return clientesAtivos().reduce((total, cliente) => {
+    return total + Number(cliente.valor || 0);
+  }, 0);
+}
+
+function calcularTicketMedio() {
+  const ativos = clientesAtivos().length;
+
+  if (ativos === 0) {
+    return 0;
+  }
+
+  return calcularMRR() / ativos;
+}
+
+function calcularPercentualMeta() {
+  const meta = Number(indicadores.metaFaturamento || 0);
+  const faturamento = Number(indicadores.faturamentoMes || 0);
+
+  if (meta <= 0) {
+    return 0;
+  }
+
+  return Math.min((faturamento / meta) * 100, 100);
+}
+
+function calcularFaltaMeta() {
+  const falta = Number(indicadores.metaFaturamento || 0) - Number(indicadores.faturamentoMes || 0);
+
+  return falta > 0 ? falta : 0;
+}
+
+function calcularProjecaoMes() {
+  const hoje = new Date();
+  const diaAtual = hoje.getDate();
+  const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+  const faturamento = Number(indicadores.faturamentoMes || 0);
+
+  if (diaAtual <= 0 || faturamento <= 0) {
+    return 0;
+  }
+
+  return (faturamento / diaAtual) * ultimoDia;
+}
+/* =========================
+   LOGIN
+========================= */
 
 async function fazerLogin() {
   const usuarioDigitado = document.getElementById("loginUsuario").value.trim();
@@ -163,7 +222,10 @@ async function fazerLogin() {
     let encontrado = null;
 
     snap.forEach(item => {
-      const user = { id: item.id, ...item.data() };
+      const user = {
+        id: item.id,
+        ...item.data()
+      };
 
       if (
         user.usuario.toLowerCase() === usuarioDigitado.toLowerCase() &&
@@ -202,6 +264,7 @@ function sairSistema() {
   if (unsubscribeUsuarios) unsubscribeUsuarios();
   if (unsubscribeTransacoes) unsubscribeTransacoes();
   if (unsubscribeFuncionarios) unsubscribeFuncionarios();
+  if (unsubscribeClientes) unsubscribeClientes();
   if (unsubscribeIndicadores) unsubscribeIndicadores();
 
   document.getElementById("loginUsuario").value = "";
@@ -215,7 +278,9 @@ function sairSistema() {
 window.fazerLogin = fazerLogin;
 window.sairSistema = sairSistema;
 
-/* PERMISSÕES */
+/* =========================
+   PERMISSÕES
+========================= */
 
 function aplicarPermissoes() {
   const app = document.getElementById("appSistema");
@@ -235,12 +300,15 @@ function aplicarPermissoes() {
   });
 }
 
-/* FIREBASE */
+/* =========================
+   FIREBASE TEMPO REAL
+========================= */
 
 function iniciarFirebase() {
   iniciarUsuarios();
   iniciarTransacoes();
   iniciarFuncionarios();
+  iniciarClientes();
   iniciarIndicadores();
 }
 
@@ -284,6 +352,20 @@ function iniciarFuncionarios() {
   });
 }
 
+function iniciarClientes() {
+  if (unsubscribeClientes) unsubscribeClientes();
+
+  unsubscribeClientes = onSnapshot(collection(db, "clientesFinanceiro"), snapshot => {
+    clientes = snapshot.docs.map(item => ({
+      id: item.id,
+      ...item.data()
+    }));
+
+    renderizar();
+    renderizarClientes();
+  });
+}
+
 function iniciarIndicadores() {
   if (unsubscribeIndicadores) unsubscribeIndicadores();
 
@@ -298,8 +380,9 @@ function iniciarIndicadores() {
     renderizar();
   });
 }
-
-/* NAVEGAÇÃO */
+/* =========================
+   NAVEGAÇÃO
+========================= */
 
 function abrirPagina(pagina, botao) {
   if (!usuarioLogado) return;
@@ -328,14 +411,38 @@ function abrirPagina(pagina, botao) {
   }
 
   const titulos = {
-    dashboard: ["Dashboard Financeiro", "Visão geral da X4 Company"],
-    entradas: ["Entradas", "Controle de receitas"],
-    saidas: ["Saídas", "Controle de despesas"],
-    funcionarios: ["Financeiro de Funcionários", "Folha mensal da equipe"],
-    metas: ["Metas", "Faturamento, MRR e clientes ativos"],
-    relatorios: ["Relatórios", "Resumo financeiro da empresa"],
-    ia: ["IA Financeira", "Análise inteligente do financeiro"],
-    usuarios: ["Usuários", "Controle de acessos"]
+    dashboard: [
+      "Dashboard CEO",
+      "Controle financeiro executivo da X4 Company"
+    ],
+    faturamento: [
+      "Faturamento",
+      "Análise de vendas, meta e projeção mensal"
+    ],
+    clientes: [
+      "Clientes",
+      "Carteira ativa, contratos e MRR automático"
+    ],
+    funcionarios: [
+      "Funcionários",
+      "Folha mensal da equipe"
+    ],
+    lancamentos: [
+      "Lançamentos",
+      "Faturamento e despesas operacionais"
+    ],
+    metas: [
+      "Metas",
+      "Objetivos de lucro e crescimento"
+    ],
+    ia: [
+      "IA Financeira",
+      "Diagnóstico inteligente da empresa"
+    ],
+    usuarios: [
+      "Usuários",
+      "Controle de permissões do sistema"
+    ]
   };
 
   if (titulos[pagina]) {
@@ -345,8 +452,17 @@ function abrirPagina(pagina, botao) {
 
   renderizar();
 
-  if (pagina === "funcionarios") renderizarFuncionarios();
-  if (pagina === "usuarios") renderizarUsuarios();
+  if (pagina === "clientes") {
+    renderizarClientes();
+  }
+
+  if (pagina === "funcionarios") {
+    renderizarFuncionarios();
+  }
+
+  if (pagina === "usuarios") {
+    renderizarUsuarios();
+  }
 
   if (window.innerWidth <= 768) {
     setTimeout(() => {
@@ -364,11 +480,13 @@ function abrirPagina(pagina, botao) {
 
 window.abrirPagina = abrirPagina;
 
-/* LANÇAMENTOS */
+/* =========================
+   LANÇAMENTOS
+========================= */
 
 async function adicionarLancamento() {
   if (!ehADM()) {
-    alert("Apenas ADM pode lançar entradas e saídas.");
+    alert("Apenas ADM pode lançar faturamento e despesas.");
     return;
   }
 
@@ -414,96 +532,126 @@ async function excluirLancamento(id) {
 
 window.excluirLancamento = excluirLancamento;
 
-/* RESUMO */
+/* =========================
+   RESUMO FINANCEIRO
+========================= */
 
 function calcularResumo() {
   const dados = dadosDoMes();
   const funcs = funcionariosDoMes();
 
-  const entradas = dados
+  const receitasLancadas = dados
     .filter(item => item.tipo === "entrada")
     .reduce((total, item) => total + Number(item.valor || 0), 0);
 
-  const saidas = dados
+  const despesas = dados
     .filter(item => item.tipo === "saida")
     .reduce((total, item) => total + Number(item.valor || 0), 0);
 
   const folha = funcs
     .reduce((total, item) => total + Number(item.valor || 0), 0);
 
-  const saldo = entradas - saidas;
+  const saldo = receitasLancadas - despesas;
   const caixaFinal = saldo - folha;
 
   return {
     dados,
     funcs,
-    entradas,
-    saidas,
+    receitasLancadas,
+    despesas,
     folha,
     saldo,
     caixaFinal
   };
 }
 
-/* RENDER PRINCIPAL */
+/* =========================
+   RENDER PRINCIPAL
+========================= */
 
 function renderizar() {
   if (!usuarioLogado) return;
 
   const {
     dados,
-    entradas,
-    saidas,
+    receitasLancadas,
+    despesas,
     folha,
     saldo,
     caixaFinal
   } = calcularResumo();
 
-  const cardFaturamentoMes = document.getElementById("cardFaturamentoMes");
-  const cardMetaMes = document.getElementById("cardMetaMes");
-  const cardMRR = document.getElementById("cardMRR");
-  const cardClientesAtivos = document.getElementById("cardClientesAtivos");
+  const faturamentoMes = Number(indicadores.faturamentoMes || 0);
+  const metaFaturamento = Number(indicadores.metaFaturamento || 0);
+  const mrr = calcularMRR();
+  const ativos = clientesAtivos().length;
+  const percentualMeta = calcularPercentualMeta();
+  const faltaMeta = calcularFaltaMeta();
+  const ticketMedio = calcularTicketMedio();
+  const projecao = calcularProjecaoMes();
 
-  if (cardFaturamentoMes) {
-    cardFaturamentoMes.innerText = moeda(indicadores.faturamentoMes || 0);
+  const campos = {
+    cardFaturamentoMes: moeda(faturamentoMes),
+    cardMetaMes: moeda(metaFaturamento),
+    cardMRR: moeda(mrr),
+    cardClientesAtivos: ativos,
+
+    cardEntradas: moeda(receitasLancadas),
+    cardSaidas: moeda(despesas),
+    cardSaldo: moeda(saldo),
+    cardFolha: moeda(folha),
+    cardCaixaFinal: moeda(caixaFinal),
+
+    radarMeta: `${percentualMeta.toFixed(0)}%`,
+    radarFaltaMeta: moeda(faltaMeta),
+    radarTicketMedio: moeda(ticketMedio),
+    radarProjecao: moeda(projecao),
+
+    detalheFaturamento: moeda(faturamentoMes),
+    detalheMeta: moeda(metaFaturamento),
+    detalhePercentualMeta: `${percentualMeta.toFixed(0)}%`,
+    detalheFaltaMeta: moeda(faltaMeta),
+
+    resumoClientesAtivos: ativos,
+    resumoMRR: moeda(mrr),
+    resumoTicketMRR: moeda(ticketMedio),
+
+    detalheLucroAtual: moeda(caixaFinal),
+    textoMetaLucro: moeda(indicadores.metaLucro || 0)
+  };
+
+  Object.entries(campos).forEach(([id, valor]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.innerText = valor;
+    }
+  });
+
+  const cardFaturamentoStatus = document.getElementById("cardFaturamentoStatus");
+  const cardMetaStatus = document.getElementById("cardMetaStatus");
+
+  if (cardFaturamentoStatus) {
+    cardFaturamentoStatus.innerText =
+      `${percentualMeta.toFixed(0)}% da meta atingida`;
   }
 
-  if (cardMetaMes) {
-    cardMetaMes.innerText = moeda(indicadores.metaFaturamento || 0);
-  }
-
-  if (cardMRR) {
-    cardMRR.innerText = moeda(indicadores.mrr || 0);
-  }
-
-  if (cardClientesAtivos) {
-    cardClientesAtivos.innerText = indicadores.clientesAtivos || 0;
+  if (cardMetaStatus) {
+    cardMetaStatus.innerText =
+      faltaMeta > 0
+        ? `Faltam ${moeda(faltaMeta)}`
+        : "Meta batida";
   }
 
   if (ehADM()) {
-    const cardEntradas = document.getElementById("cardEntradas");
-    const cardSaidas = document.getElementById("cardSaidas");
-    const cardSaldo = document.getElementById("cardSaldo");
-    const cardFolha = document.getElementById("cardFolha");
-    const cardCaixaFinal = document.getElementById("cardCaixaFinal");
-
-    if (cardEntradas) cardEntradas.innerText = moeda(entradas);
-    if (cardSaidas) cardSaidas.innerText = moeda(saidas);
-    if (cardSaldo) cardSaldo.innerText = moeda(saldo);
-    if (cardFolha) cardFolha.innerText = moeda(folha);
-    if (cardCaixaFinal) cardCaixaFinal.innerText = moeda(caixaFinal);
-
     renderizarTabela("listaTransacoes", dados, true);
-    renderizarTabela("listaEntradas", dados.filter(item => item.tipo === "entrada"), false);
-    renderizarTabela("listaSaidas", dados.filter(item => item.tipo === "saida"), false);
 
-    atualizarMetas(indicadores.faturamentoMes || 0, caixaFinal);
-    criarGrafico(entradas, saidas, folha);
-    atualizarRelatorios(entradas, saidas, folha, caixaFinal, dados.length);
+    atualizarMetas(faturamentoMes, caixaFinal);
+    criarGrafico(receitasLancadas, despesas, folha);
   }
 }
-
-/* TABELAS */
+/* =========================
+   TABELAS
+========================= */
 
 function renderizarTabela(idTabela, dados, mostrarAcao) {
   const tabela = document.getElementById(idTabela);
@@ -531,7 +679,7 @@ function renderizarTabela(idTabela, dados, mostrarAcao) {
 
           ${mostrarAcao ? `
             <td class="${item.tipo === "entrada" ? "tipo-entrada" : "tipo-saida"}">
-              ${item.tipo.toUpperCase()}
+              ${item.tipo === "entrada" ? "FATURAMENTO" : "DESPESA"}
             </td>
           ` : ""}
 
@@ -553,27 +701,103 @@ function renderizarTabela(idTabela, dados, mostrarAcao) {
     });
 }
 
-/* RELATÓRIOS */
+/* =========================
+   CLIENTES / MRR AUTOMÁTICO
+========================= */
 
-function atualizarRelatorios(entradas, saidas, folha, caixaFinal, totalTransacoes) {
-  const campos = {
-    relFaturamentoMes: moeda(indicadores.faturamentoMes || 0),
-    relMRR: moeda(indicadores.mrr || 0),
-    relClientesAtivos: indicadores.clientesAtivos || 0,
-    relEntradas: moeda(entradas),
-    relSaidas: moeda(saidas),
-    relFolha: moeda(folha),
-    relSaldoFinal: moeda(caixaFinal),
-    relTransacoes: totalTransacoes
-  };
+async function adicionarCliente() {
+  if (!ehADM()) {
+    alert("Apenas ADM pode cadastrar clientes.");
+    return;
+  }
 
-  Object.entries(campos).forEach(([id, valor]) => {
-    const el = document.getElementById(id);
-    if (el) el.innerText = valor;
+  const nome = document.getElementById("clienteNome").value.trim();
+  const valor = Number(document.getElementById("clienteValor").value);
+  const status = document.getElementById("clienteStatus").value;
+
+  if (!nome || valor <= 0) {
+    alert("Preencha nome e valor mensal corretamente.");
+    return;
+  }
+
+  await addDoc(collection(db, "clientesFinanceiro"), {
+    nome,
+    valor,
+    status,
+    criadoPor: usuarioLogado.usuario,
+    criadoEm: new Date().toISOString()
+  });
+
+  document.getElementById("clienteNome").value = "";
+  document.getElementById("clienteValor").value = "";
+  document.getElementById("clienteStatus").value = "Ativo";
+}
+
+window.adicionarCliente = adicionarCliente;
+
+function renderizarClientes() {
+  const tabela = document.getElementById("listaClientes");
+  if (!tabela) return;
+
+  tabela.innerHTML = "";
+
+  if (clientes.length === 0) {
+    tabela.innerHTML = `
+      <tr>
+        <td colspan="4">Nenhum cliente cadastrado.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  clientes
+    .slice()
+    .sort((a, b) => String(a.nome).localeCompare(String(b.nome)))
+    .forEach(cliente => {
+      tabela.innerHTML += `
+        <tr>
+          <td>${cliente.nome}</td>
+          <td>${moeda(cliente.valor)}</td>
+          <td class="${cliente.status === "Ativo" ? "status-pago" : "status-pendente"}">
+            ${cliente.status}
+          </td>
+          <td>
+            <button class="btn-small btn-edit" onclick="alternarStatusCliente('${cliente.id}', '${cliente.status}')">
+              ${cliente.status === "Ativo" ? "Inativar" : "Ativar"}
+            </button>
+
+            <button class="btn-small btn-delete" onclick="excluirCliente('${cliente.id}')">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+}
+
+async function alternarStatusCliente(id, statusAtual) {
+  const novoStatus = statusAtual === "Ativo" ? "Inativo" : "Ativo";
+
+  await updateDoc(doc(db, "clientesFinanceiro", id), {
+    status: novoStatus,
+    atualizadoPor: usuarioLogado.usuario,
+    atualizadoEm: new Date().toISOString()
   });
 }
 
-/* FUNCIONÁRIOS */
+window.alternarStatusCliente = alternarStatusCliente;
+
+async function excluirCliente(id) {
+  if (!confirm("Excluir este cliente?")) return;
+
+  await deleteDoc(doc(db, "clientesFinanceiro", id));
+}
+
+window.excluirCliente = excluirCliente;
+
+/* =========================
+   FUNCIONÁRIOS
+========================= */
 
 async function adicionarFuncionario() {
   if (!ehADM()) {
@@ -678,7 +902,6 @@ function atualizarResumoFuncionarios() {
     if (el) el.innerText = valor;
   });
 }
-
 async function alternarStatusFuncionario(id, statusAtual) {
   const novoStatus = statusAtual === "Pago" ? "Pendente" : "Pago";
 
@@ -699,19 +922,20 @@ async function excluirFuncionario(id) {
 
 window.excluirFuncionario = excluirFuncionario;
 
-/* INDICADORES */
+/* =========================
+   INDICADORES / METAS
+========================= */
 
 function pegarNumeroDoInput(id, valorAtual) {
   const campo = document.getElementById(id);
+
   if (!campo) return valorAtual;
 
-  const valorTexto = campo.value;
-
-  if (valorTexto === "") {
+  if (campo.value === "") {
     return valorAtual;
   }
 
-  return Number(valorTexto);
+  return Number(campo.value);
 }
 
 async function salvarIndicadores() {
@@ -721,22 +945,42 @@ async function salvarIndicadores() {
   }
 
   const novosIndicadores = {
-    faturamentoMes: pegarNumeroDoInput("inputFaturamentoMes", indicadores.faturamentoMes),
-    mrr: pegarNumeroDoInput("inputMRR", indicadores.mrr),
-    clientesAtivos: pegarNumeroDoInput("inputClientesAtivos", indicadores.clientesAtivos),
-    metaFaturamento: pegarNumeroDoInput("inputMetaFaturamento", indicadores.metaFaturamento),
-    metaLucro: pegarNumeroDoInput("inputMetaLucro", indicadores.metaLucro),
+    faturamentoMes: pegarNumeroDoInput(
+      "inputFaturamentoMes",
+      indicadores.faturamentoMes
+    ),
+
+    metaFaturamento: pegarNumeroDoInput(
+      "inputMetaFaturamento",
+      indicadores.metaFaturamento
+    ),
+
+    metaLucro: pegarNumeroDoInput(
+      "inputMetaLucro",
+      indicadores.metaLucro
+    ),
+
     atualizadoPor: usuarioLogado.usuario,
     atualizadoEm: new Date().toISOString()
   };
 
-  await setDoc(doc(db, "configuracoesFinanceiro", "indicadores"), novosIndicadores, { merge: true });
+  await setDoc(
+    doc(db, "configuracoesFinanceiro", "indicadores"),
+    novosIndicadores,
+    { merge: true }
+  );
 
-  ["inputFaturamentoMes", "inputMRR", "inputClientesAtivos", "inputMetaFaturamento", "inputMetaLucro"]
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = "";
-    });
+  [
+    "inputFaturamentoMes",
+    "inputMetaFaturamento",
+    "inputMetaLucro"
+  ].forEach(id => {
+    const campo = document.getElementById(id);
+
+    if (campo) {
+      campo.value = "";
+    }
+  });
 
   alert("Indicadores salvos com sucesso!");
 }
@@ -744,30 +988,48 @@ async function salvarIndicadores() {
 window.salvarIndicadores = salvarIndicadores;
 
 function atualizarMetas(faturamentoMes, lucro) {
-  const percFaturamento = indicadores.metaFaturamento > 0
-    ? Math.min((faturamentoMes / indicadores.metaFaturamento) * 100, 100)
-    : 0;
+  const metaFaturamento =
+    Number(indicadores.metaFaturamento || 0);
 
-  const percLucro = indicadores.metaLucro > 0
-    ? Math.min((lucro / indicadores.metaLucro) * 100, 100)
-    : 0;
+  const metaLucro =
+    Number(indicadores.metaLucro || 0);
 
-  const textoMetaFaturamento = document.getElementById("textoMetaFaturamento");
-  const textoMetaLucro = document.getElementById("textoMetaLucro");
-  const metaFaturamento = document.getElementById("metaFaturamento");
-  const metaLucro = document.getElementById("metaLucro");
-  const barraFaturamento = document.getElementById("barraFaturamento");
-  const barraLucro = document.getElementById("barraLucro");
+  const percFaturamento =
+    metaFaturamento > 0
+      ? Math.min((faturamentoMes / metaFaturamento) * 100, 100)
+      : 0;
 
-  if (textoMetaFaturamento) textoMetaFaturamento.innerText = `Meta: ${moeda(indicadores.metaFaturamento)}`;
-  if (textoMetaLucro) textoMetaLucro.innerText = `Meta: ${moeda(indicadores.metaLucro)}`;
-  if (metaFaturamento) metaFaturamento.innerText = `${percFaturamento.toFixed(0)}%`;
-  if (metaLucro) metaLucro.innerText = `${Math.max(percLucro, 0).toFixed(0)}%`;
-  if (barraFaturamento) barraFaturamento.style.width = `${percFaturamento}%`;
-  if (barraLucro) barraLucro.style.width = `${Math.max(percLucro, 0)}%`;
+  const percLucro =
+    metaLucro > 0
+      ? Math.min((lucro / metaLucro) * 100, 100)
+      : 0;
+
+  const barraFaturamento =
+    document.getElementById("barraFaturamento");
+
+  const barraLucro =
+    document.getElementById("barraLucro");
+
+  const metaLucroTexto =
+    document.getElementById("metaLucro");
+
+  if (barraFaturamento) {
+    barraFaturamento.style.width = `${percFaturamento}%`;
+  }
+
+  if (barraLucro) {
+    barraLucro.style.width = `${Math.max(percLucro, 0)}%`;
+  }
+
+  if (metaLucroTexto) {
+    metaLucroTexto.innerText =
+      `${Math.max(percLucro, 0).toFixed(0)}%`;
+  }
 }
 
-/* IA */
+/* =========================
+   IA FINANCEIRA
+========================= */
 
 function gerarResumoIA() {
   if (!ehADM()) {
@@ -775,62 +1037,162 @@ function gerarResumoIA() {
     return;
   }
 
-  const { dados, entradas, saidas, folha, saldo, caixaFinal } = calcularResumo();
+  const {
+    dados,
+    receitasLancadas,
+    despesas,
+    folha,
+    saldo,
+    caixaFinal
+  } = calcularResumo();
 
-  const maiorEntrada = dados
-    .filter(item => item.tipo === "entrada")
-    .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))[0];
+  const faturamentoMes =
+    Number(indicadores.faturamentoMes || 0);
 
-  const maiorSaida = dados
-    .filter(item => item.tipo === "saida")
-    .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))[0];
+  const metaFaturamento =
+    Number(indicadores.metaFaturamento || 0);
 
-  const ticketMedio = indicadores.clientesAtivos > 0
-    ? indicadores.faturamentoMes / indicadores.clientesAtivos
-    : 0;
+  const mrr =
+    calcularMRR();
+
+  const ativos =
+    clientesAtivos().length;
+
+  const percentualMeta =
+    calcularPercentualMeta();
+
+  const faltaMeta =
+    calcularFaltaMeta();
+
+  const ticketMedio =
+    calcularTicketMedio();
+
+  const projecao =
+    calcularProjecaoMes();
+
+  const maiorReceita =
+    dados
+      .filter(item => item.tipo === "entrada")
+      .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))[0];
+
+  const maiorDespesa =
+    dados
+      .filter(item => item.tipo === "saida")
+      .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))[0];
 
   let texto = `
-    <h4>Análise Inteligente da X4 Company</h4>
+    <h4>Análise Executiva X4 Company</h4>
 
-    <p>O faturamento do mês está em <strong>${moeda(indicadores.faturamentoMes)}</strong>.</p>
-    <p>A meta do mês é <strong>${moeda(indicadores.metaFaturamento)}</strong>.</p>
-    <p>A receita recorrente mensal (MRR) está em <strong>${moeda(indicadores.mrr)}</strong>.</p>
-    <p>A agência possui <strong>${indicadores.clientesAtivos}</strong> clientes ativos.</p>
+    <p>
+      O faturamento atual do mês está em
+      <strong>${moeda(faturamentoMes)}</strong>.
+    </p>
 
-    <p>As entradas lançadas somam <strong>${moeda(entradas)}</strong>.</p>
-    <p>As saídas lançadas somam <strong>${moeda(saidas)}</strong>.</p>
-    <p>A folha de funcionários soma <strong>${moeda(folha)}</strong>.</p>
-    <p>O saldo antes da folha é <strong>${moeda(saldo)}</strong>.</p>
-    <p>O caixa final após folha é <strong>${moeda(caixaFinal)}</strong>.</p>
+    <p>
+      A meta mensal é
+      <strong>${moeda(metaFaturamento)}</strong>,
+      com
+      <strong>${percentualMeta.toFixed(0)}%</strong>
+      atingido até agora.
+    </p>
+
+    <p>
+      Ainda faltam
+      <strong>${moeda(faltaMeta)}</strong>
+      para bater a meta.
+    </p>
+
+    <p>
+      O MRR automático da carteira ativa está em
+      <strong>${moeda(mrr)}</strong>,
+      com
+      <strong>${ativos}</strong>
+      clientes ativos.
+    </p>
+
+    <p>
+      O ticket médio mensal por cliente ativo está em
+      <strong>${moeda(ticketMedio)}</strong>.
+    </p>
+
+    <p>
+      A projeção estimada para fechamento do mês é
+      <strong>${moeda(projecao)}</strong>.
+    </p>
+
+    <p>
+      As receitas lançadas somam
+      <strong>${moeda(receitasLancadas)}</strong>,
+      enquanto as despesas somam
+      <strong>${moeda(despesas)}</strong>.
+    </p>
+
+    <p>
+      A folha de funcionários soma
+      <strong>${moeda(folha)}</strong>.
+      O caixa final estimado após folha é
+      <strong>${moeda(caixaFinal)}</strong>.
+    </p>
   `;
 
-  if (maiorEntrada) {
-    texto += `<p>A maior entrada foi <strong>${maiorEntrada.descricao}</strong>, no valor de <strong>${moeda(maiorEntrada.valor)}</strong>.</p>`;
+  if (maiorReceita) {
+    texto += `
+      <p>
+        A maior receita lançada foi
+        <strong>${maiorReceita.descricao}</strong>,
+        no valor de
+        <strong>${moeda(maiorReceita.valor)}</strong>.
+      </p>
+    `;
   }
 
-  if (maiorSaida) {
-    texto += `<p>A maior saída foi <strong>${maiorSaida.descricao}</strong>, no valor de <strong>${moeda(maiorSaida.valor)}</strong>.</p>`;
+  if (maiorDespesa) {
+    texto += `
+      <p>
+        A maior despesa lançada foi
+        <strong>${maiorDespesa.descricao}</strong>,
+        no valor de
+        <strong>${moeda(maiorDespesa.valor)}</strong>.
+      </p>
+    `;
+  }
+
+  if (percentualMeta >= 100) {
+    texto += `
+      <p class="positivo">
+        Diagnóstico: a meta mensal foi batida. O time está performando acima do objetivo.
+      </p>
+    `;
+  } else if (percentualMeta >= 70) {
+    texto += `
+      <p class="alerta">
+        Diagnóstico: a empresa está próxima da meta. Recomendo intensificar fechamento e follow-up.
+      </p>
+    `;
+  } else {
+    texto += `
+      <p class="negativo">
+        Diagnóstico: o faturamento ainda está distante da meta. É necessário aumentar vendas, reativar leads e acelerar propostas.
+      </p>
+    `;
   }
 
   if (caixaFinal > 0) {
-    texto += `<p class="positivo">Diagnóstico: caixa final positivo. O cenário financeiro está saudável.</p>`;
+    texto += `
+      <p class="positivo">
+        Caixa final positivo. A operação está financeiramente saudável neste cenário.
+      </p>
+    `;
   } else if (caixaFinal < 0) {
-    texto += `<p class="negativo">Diagnóstico: caixa final negativo. Recomendo revisar custos, folha e despesas fixas.</p>`;
-  } else {
-    texto += `<p class="alerta">Diagnóstico: empresa empatada após considerar a folha.</p>`;
+    texto += `
+      <p class="negativo">
+        Caixa final negativo. Revise despesas, folha e custos operacionais antes de novos compromissos.
+      </p>
+    `;
   }
 
-  if (indicadores.faturamentoMes >= indicadores.metaFaturamento) {
-    texto += `<p class="positivo">A meta de faturamento foi atingida ou superada.</p>`;
-  } else {
-    texto += `<p>Ainda faltam <strong>${moeda(indicadores.metaFaturamento - indicadores.faturamentoMes)}</strong> para bater a meta.</p>`;
-  }
-
-  if (ticketMedio > 0) {
-    texto += `<p>Ticket médio aproximado por cliente ativo: <strong>${moeda(ticketMedio)}</strong>.</p>`;
-  }
-
-  const box = document.getElementById("resumoIA");
+  const box =
+    document.getElementById("resumoIA");
 
   if (box) {
     box.innerHTML = texto;
@@ -839,7 +1201,9 @@ function gerarResumoIA() {
 
 window.gerarResumoIA = gerarResumoIA;
 
-/* USUÁRIOS */
+/* =========================
+   USUÁRIOS
+========================= */
 
 async function criarUsuario() {
   if (!ehADM()) {
@@ -847,29 +1211,39 @@ async function criarUsuario() {
     return;
   }
 
-  const usuario = document.getElementById("novoUsuario").value.trim();
-  const senha = document.getElementById("novaSenha").value.trim();
-  const cargo = document.getElementById("novoCargo").value;
+  const usuario =
+    document.getElementById("novoUsuario").value.trim();
+
+  const senha =
+    document.getElementById("novaSenha").value.trim();
+
+  const cargo =
+    document.getElementById("novoCargo").value;
 
   if (!usuario || !senha) {
     alert("Preencha nome e senha.");
     return;
   }
 
-  const id = usuario
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "-");
+  const id =
+    usuario
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "-");
 
-  await setDoc(doc(db, "usuariosFinanceiro", id), {
-    usuario,
-    senha,
-    cargo,
-    acesso: cargo === "ADM" ? "TOTAL" : "VENDAS",
-    criadoPor: usuarioLogado.usuario,
-    criadoEm: new Date().toISOString()
-  }, { merge: true });
+  await setDoc(
+    doc(db, "usuariosFinanceiro", id),
+    {
+      usuario,
+      senha,
+      cargo,
+      acesso: cargo === "ADM" ? "TOTAL" : "VENDAS",
+      criadoPor: usuarioLogado.usuario,
+      criadoEm: new Date().toISOString()
+    },
+    { merge: true }
+  );
 
   document.getElementById("novoUsuario").value = "";
   document.getElementById("novaSenha").value = "";
@@ -881,7 +1255,9 @@ async function criarUsuario() {
 window.criarUsuario = criarUsuario;
 
 function renderizarUsuarios() {
-  const lista = document.getElementById("listaUsuarios");
+  const lista =
+    document.getElementById("listaUsuarios");
+
   if (!lista) return;
 
   lista.innerHTML = "";
@@ -890,15 +1266,33 @@ function renderizarUsuarios() {
     lista.innerHTML += `
       <div class="user-card">
         <h4>${user.usuario}</h4>
-        <p>Cargo: <strong>${user.cargo}</strong></p>
-        <p>Acesso: <strong>${user.acesso}</strong></p>
-        <small>Senha cadastrada: ${user.senha}</small>
 
-        ${user.usuario !== "Leandro Belfort" ? `
-          <button class="btn-small btn-delete" onclick="excluirUsuario('${user.id}')">
-            Excluir
-          </button>
-        ` : ""}
+        <p>
+          Cargo:
+          <strong>${user.cargo}</strong>
+        </p>
+
+        <p>
+          Acesso:
+          <strong>${user.acesso}</strong>
+        </p>
+
+        <small>
+          Senha cadastrada: ${user.senha}
+        </small>
+
+        ${
+          user.usuario !== "Leandro Belfort"
+            ? `
+              <button
+                class="btn-small btn-delete"
+                onclick="excluirUsuario('${user.id}')"
+              >
+                Excluir
+              </button>
+            `
+            : ""
+        }
       </div>
     `;
   });
@@ -909,15 +1303,20 @@ async function excluirUsuario(id) {
 
   if (!confirm("Excluir este usuário?")) return;
 
-  await deleteDoc(doc(db, "usuariosFinanceiro", id));
+  await deleteDoc(
+    doc(db, "usuariosFinanceiro", id)
+  );
 }
 
 window.excluirUsuario = excluirUsuario;
 
-/* GRÁFICO */
+/* =========================
+   GRÁFICO
+========================= */
 
-function criarGrafico(entradas, saidas, folha) {
-  const canvas = document.getElementById("graficoFinanceiro");
+function criarGrafico(receitas, despesas, folha) {
+  const canvas =
+    document.getElementById("graficoFinanceiro");
 
   if (!canvas || typeof Chart === "undefined") return;
 
@@ -927,16 +1326,30 @@ function criarGrafico(entradas, saidas, folha) {
 
   grafico = new Chart(canvas, {
     type: "bar",
+
     data: {
-      labels: ["Entradas", "Saídas", "Folha"],
-      datasets: [{
-        label: "Financeiro X4",
-        data: [entradas, saidas, folha],
-        borderWidth: 1
-      }]
+      labels: [
+        "Receitas",
+        "Despesas",
+        "Folha"
+      ],
+
+      datasets: [
+        {
+          label: "Financeiro X4",
+          data: [
+            receitas,
+            despesas,
+            folha
+          ],
+          borderWidth: 1
+        }
+      ]
     },
+
     options: {
       responsive: true,
+
       plugins: {
         legend: {
           labels: {
@@ -944,12 +1357,14 @@ function criarGrafico(entradas, saidas, folha) {
           }
         }
       },
+
       scales: {
         x: {
           ticks: {
             color: "#8fb8d8"
           }
         },
+
         y: {
           ticks: {
             color: "#8fb8d8"
@@ -960,11 +1375,14 @@ function criarGrafico(entradas, saidas, folha) {
   });
 }
 
-/* EVENTOS */
+/* =========================
+   EVENTOS
+========================= */
 
 if (filtroMes) {
   filtroMes.addEventListener("change", () => {
     renderizar();
     renderizarFuncionarios();
+    renderizarClientes();
   });
 }
