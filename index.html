@@ -19,7 +19,6 @@
     <input type="password" id="loginSenha" placeholder="Senha">
 
     <button onclick="fazerLogin()">Entrar no Sistema</button>
-
     <small id="loginErro"></small>
   </div>
 </div>
@@ -67,25 +66,25 @@
       <div class="card faturamento-real">
         <span>Faturamento do Mês</span>
         <h2 id="cardFaturamentoMes">R$ 0,00</h2>
-        <small>Vendas / faturamento atual</small>
+        <small>Vendas realizadas no mês</small>
       </div>
 
-      <div class="card mrr">
+      <div class="card meta-mes">
+        <span>Meta do Mês</span>
+        <h2 id="cardMetaMes">R$ 0,00</h2>
+        <small>Objetivo mensal da agência</small>
+      </div>
+
+      <div class="card mrr adm-only">
         <span>MRR</span>
         <h2 id="cardMRR">R$ 0,00</h2>
         <small>Receita recorrente mensal</small>
       </div>
 
-      <div class="card clientes-ativos">
+      <div class="card clientes-ativos adm-only">
         <span>Clientes Ativos</span>
         <h2 id="cardClientesAtivos">0</h2>
-        <small>Base ativa da agência</small>
-      </div>
-
-      <div class="card saldo area-admin-card">
-        <span>Saldo Atual</span>
-        <h2 id="cardSaldo">R$ 0,00</h2>
-        <small>Entradas - saídas</small>
+        <small>Carteira atual da agência</small>
       </div>
     </section>
 
@@ -130,11 +129,9 @@
           <input type="number" id="valor" placeholder="Valor">
 
           <select id="categoria">
-            <option value="Cliente">Cliente</option>
-            <option value="Tráfego Pago">Tráfego Pago</option>
+            <option value="Receita">Receita</option>
+            <option value="Despesa">Despesa</option>
             <option value="Funcionário">Funcionário</option>
-            <option value="Ferramenta">Ferramenta</option>
-            <option value="Imposto">Imposto</option>
             <option value="Outros">Outros</option>
           </select>
 
@@ -171,7 +168,6 @@
     <section class="pagina" id="entradas">
       <div class="panel">
         <h3>Todas as Entradas</h3>
-
         <div class="table-area">
           <table>
             <thead>
@@ -191,7 +187,6 @@
     <section class="pagina" id="saidas">
       <div class="panel">
         <h3>Todas as Saídas</h3>
-
         <div class="table-area">
           <table>
             <thead>
@@ -228,7 +223,6 @@
 
         <div class="panel">
           <h3>Resumo da Folha</h3>
-
           <div class="relatorio">
             <p>Total da folha <strong id="totalFolhaFuncionarios">R$ 0,00</strong></p>
             <p>Funcionários cadastrados <strong id="totalFuncionarios">0</strong></p>
@@ -240,7 +234,6 @@
 
       <div class="panel">
         <h3>Lista de Funcionários</h3>
-
         <div class="table-area">
           <table>
             <thead>

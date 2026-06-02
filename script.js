@@ -31,12 +31,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* =========================
-   ESTADO GLOBAL
-========================= */
-
 let usuarioLogado = null;
-
 let usuarios = [];
 let transacoes = [];
 let funcionarios = [];
@@ -62,9 +57,7 @@ if (filtroMes) {
   filtroMes.value = new Date().toISOString().slice(0, 7);
 }
 
-/* =========================
-   USUÁRIOS PADRÃO
-========================= */
+/* USUÁRIOS PADRÃO */
 
 const usuariosPadrao = [
   {
@@ -106,26 +99,19 @@ const usuariosPadrao = [
 
 async function garantirUsuariosPadrao() {
   for (const user of usuariosPadrao) {
-    const ref = doc(db, "usuariosFinanceiro", user.id);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      await setDoc(ref, {
-        usuario: user.usuario,
-        senha: user.senha,
-        cargo: user.cargo,
-        acesso: user.acesso,
-        criadoEm: new Date().toISOString()
-      });
-    }
+    await setDoc(doc(db, "usuariosFinanceiro", user.id), {
+      usuario: user.usuario,
+      senha: user.senha,
+      cargo: user.cargo,
+      acesso: user.acesso,
+      criadoEm: new Date().toISOString()
+    }, { merge: true });
   }
 }
 
 garantirUsuariosPadrao();
 
-/* =========================
-   HELPERS
-========================= */
+/* HELPERS */
 
 function moeda(valor) {
   return Number(valor || 0).toLocaleString("pt-BR", {
@@ -158,9 +144,7 @@ function funcionariosDoMes() {
   return funcionarios.filter(item => item.mes === mesAtual());
 }
 
-/* =========================
-   LOGIN
-========================= */
+/* LOGIN */
 
 async function fazerLogin() {
   const usuarioDigitado = document.getElementById("loginUsuario").value.trim();
@@ -176,14 +160,10 @@ async function fazerLogin() {
 
   try {
     const snap = await getDocs(collection(db, "usuariosFinanceiro"));
-
     let encontrado = null;
 
     snap.forEach(item => {
-      const user = {
-        id: item.id,
-        ...item.data()
-      };
+      const user = { id: item.id, ...item.data() };
 
       if (
         user.usuario.toLowerCase() === usuarioDigitado.toLowerCase() &&
@@ -234,9 +214,8 @@ function sairSistema() {
 
 window.fazerLogin = fazerLogin;
 window.sairSistema = sairSistema;
-/* =========================
-   PERMISSÕES
-========================= */
+
+/* PERMISSÕES */
 
 function aplicarPermissoes() {
   const app = document.getElementById("appSistema");
@@ -256,9 +235,7 @@ function aplicarPermissoes() {
   });
 }
 
-/* =========================
-   FIREBASE LISTENERS
-========================= */
+/* FIREBASE */
 
 function iniciarFirebase() {
   iniciarUsuarios();
@@ -322,15 +299,13 @@ function iniciarIndicadores() {
   });
 }
 
-/* =========================
-   NAVEGAÇÃO
-========================= */
+/* NAVEGAÇÃO */
 
 function abrirPagina(pagina, botao) {
   if (!usuarioLogado) return;
 
   if (!ehADM() && pagina !== "dashboard") {
-    alert("Você tem acesso apenas ao faturamento do mês.");
+    alert("Você tem acesso apenas ao faturamento do mês e meta.");
     return;
   }
 
@@ -370,13 +345,8 @@ function abrirPagina(pagina, botao) {
 
   renderizar();
 
-  if (pagina === "funcionarios") {
-    renderizarFuncionarios();
-  }
-
-  if (pagina === "usuarios") {
-    renderizarUsuarios();
-  }
+  if (pagina === "funcionarios") renderizarFuncionarios();
+  if (pagina === "usuarios") renderizarUsuarios();
 
   if (window.innerWidth <= 768) {
     setTimeout(() => {
@@ -394,9 +364,7 @@ function abrirPagina(pagina, botao) {
 
 window.abrirPagina = abrirPagina;
 
-/* =========================
-   FINANCEIRO
-========================= */
+/* LANÇAMENTOS */
 
 async function adicionarLancamento() {
   if (!ehADM()) {
@@ -446,6 +414,8 @@ async function excluirLancamento(id) {
 
 window.excluirLancamento = excluirLancamento;
 
+/* RESUMO */
+
 function calcularResumo() {
   const dados = dadosDoMes();
   const funcs = funcionariosDoMes();
@@ -474,9 +444,8 @@ function calcularResumo() {
     caixaFinal
   };
 }
-/* =========================
-   RENDERIZAÇÃO PRINCIPAL
-========================= */
+
+/* RENDER PRINCIPAL */
 
 function renderizar() {
   if (!usuarioLogado) return;
@@ -490,322 +459,121 @@ function renderizar() {
     caixaFinal
   } = calcularResumo();
 
-  /* CARDS PRINCIPAIS */
-
-  const cardFaturamentoMes =
-    document.getElementById("cardFaturamentoMes");
-
-  const cardMRR =
-    document.getElementById("cardMRR");
-
-  const cardClientesAtivos =
-    document.getElementById("cardClientesAtivos");
+  const cardFaturamentoMes = document.getElementById("cardFaturamentoMes");
+  const cardMetaMes = document.getElementById("cardMetaMes");
+  const cardMRR = document.getElementById("cardMRR");
+  const cardClientesAtivos = document.getElementById("cardClientesAtivos");
 
   if (cardFaturamentoMes) {
-    cardFaturamentoMes.innerText =
-      moeda(indicadores.faturamentoMes || 0);
+    cardFaturamentoMes.innerText = moeda(indicadores.faturamentoMes || 0);
+  }
+
+  if (cardMetaMes) {
+    cardMetaMes.innerText = moeda(indicadores.metaFaturamento || 0);
   }
 
   if (cardMRR) {
-    cardMRR.innerText =
-      moeda(indicadores.mrr || 0);
+    cardMRR.innerText = moeda(indicadores.mrr || 0);
   }
 
   if (cardClientesAtivos) {
-    cardClientesAtivos.innerText =
-      indicadores.clientesAtivos || 0;
+    cardClientesAtivos.innerText = indicadores.clientesAtivos || 0;
   }
 
-  /* SOMENTE ADM */
-
   if (ehADM()) {
+    const cardEntradas = document.getElementById("cardEntradas");
+    const cardSaidas = document.getElementById("cardSaidas");
+    const cardSaldo = document.getElementById("cardSaldo");
+    const cardFolha = document.getElementById("cardFolha");
+    const cardCaixaFinal = document.getElementById("cardCaixaFinal");
 
-    const cardEntradas =
-      document.getElementById("cardEntradas");
+    if (cardEntradas) cardEntradas.innerText = moeda(entradas);
+    if (cardSaidas) cardSaidas.innerText = moeda(saidas);
+    if (cardSaldo) cardSaldo.innerText = moeda(saldo);
+    if (cardFolha) cardFolha.innerText = moeda(folha);
+    if (cardCaixaFinal) cardCaixaFinal.innerText = moeda(caixaFinal);
 
-    const cardSaidas =
-      document.getElementById("cardSaidas");
+    renderizarTabela("listaTransacoes", dados, true);
+    renderizarTabela("listaEntradas", dados.filter(item => item.tipo === "entrada"), false);
+    renderizarTabela("listaSaidas", dados.filter(item => item.tipo === "saida"), false);
 
-    const cardSaldo =
-      document.getElementById("cardSaldo");
-
-    const cardFolha =
-      document.getElementById("cardFolha");
-
-    const cardCaixaFinal =
-      document.getElementById("cardCaixaFinal");
-
-    if (cardEntradas) {
-      cardEntradas.innerText =
-        moeda(entradas);
-    }
-
-    if (cardSaidas) {
-      cardSaidas.innerText =
-        moeda(saidas);
-    }
-
-    if (cardSaldo) {
-      cardSaldo.innerText =
-        moeda(saldo);
-    }
-
-    if (cardFolha) {
-      cardFolha.innerText =
-        moeda(folha);
-    }
-
-    if (cardCaixaFinal) {
-      cardCaixaFinal.innerText =
-        moeda(caixaFinal);
-    }
-
-    renderizarTabela(
-      "listaTransacoes",
-      dados,
-      true
-    );
-
-    renderizarTabela(
-      "listaEntradas",
-      dados.filter(
-        item =>
-          item.tipo === "entrada"
-      ),
-      false
-    );
-
-    renderizarTabela(
-      "listaSaidas",
-      dados.filter(
-        item =>
-          item.tipo === "saida"
-      ),
-      false
-    );
-
-    atualizarMetas(
-      indicadores.faturamentoMes || 0,
-      caixaFinal
-    );
-
-    criarGrafico(
-      entradas,
-      saidas,
-      folha
-    );
-
-    atualizarRelatorios(
-      entradas,
-      saidas,
-      folha,
-      caixaFinal,
-      dados.length
-    );
+    atualizarMetas(indicadores.faturamentoMes || 0, caixaFinal);
+    criarGrafico(entradas, saidas, folha);
+    atualizarRelatorios(entradas, saidas, folha, caixaFinal, dados.length);
   }
 }
 
-/* =========================
-   TABELAS
-========================= */
+/* TABELAS */
 
-function renderizarTabela(
-  idTabela,
-  dados,
-  mostrarAcao
-) {
-
-  const tabela =
-    document.getElementById(
-      idTabela
-    );
-
+function renderizarTabela(idTabela, dados, mostrarAcao) {
+  const tabela = document.getElementById(idTabela);
   if (!tabela) return;
 
   tabela.innerHTML = "";
 
   if (dados.length === 0) {
-
     tabela.innerHTML = `
       <tr>
-        <td colspan="10">
-          Nenhum registro encontrado.
-        </td>
+        <td colspan="10">Nenhum registro encontrado.</td>
       </tr>
     `;
-
     return;
   }
 
   dados
     .slice()
-    .sort(
-      (a, b) =>
-        new Date(
-          b.criadoEm || 0
-        ) -
-        new Date(
-          a.criadoEm || 0
-        )
-    )
+    .sort((a, b) => new Date(b.criadoEm || 0) - new Date(a.criadoEm || 0))
     .forEach(item => {
-
       tabela.innerHTML += `
         <tr>
+          <td>${item.descricao}</td>
+          <td>${item.categoria}</td>
 
-          <td>
-            ${item.descricao}
-          </td>
+          ${mostrarAcao ? `
+            <td class="${item.tipo === "entrada" ? "tipo-entrada" : "tipo-saida"}">
+              ${item.tipo.toUpperCase()}
+            </td>
+          ` : ""}
 
-          <td>
-            ${item.categoria}
-          </td>
-
-          ${
-            mostrarAcao
-              ? `
-                <td class="${
-                  item.tipo === "entrada"
-                    ? "tipo-entrada"
-                    : "tipo-saida"
-                }">
-                  ${item.tipo.toUpperCase()}
-                </td>
-              `
-              : ""
-          }
-
-          <td class="${
-            item.tipo === "entrada"
-              ? "tipo-entrada"
-              : "tipo-saida"
-          }">
+          <td class="${item.tipo === "entrada" ? "tipo-entrada" : "tipo-saida"}">
             ${moeda(item.valor)}
           </td>
 
-          <td>
-            ${item.data}
-          </td>
+          <td>${item.data}</td>
 
-          ${
-            mostrarAcao
-              ? `
-                <td>
-                  <button
-                    class="btn-small btn-delete"
-                    onclick="excluirLancamento('${item.id}')"
-                  >
-                    Excluir
-                  </button>
-                </td>
-              `
-              : ""
-          }
-
+          ${mostrarAcao ? `
+            <td>
+              <button class="btn-small btn-delete" onclick="excluirLancamento('${item.id}')">
+                Excluir
+              </button>
+            </td>
+          ` : ""}
         </tr>
       `;
     });
 }
 
-/* =========================
-   RELATÓRIOS
-========================= */
+/* RELATÓRIOS */
 
-function atualizarRelatorios(
-  entradas,
-  saidas,
-  folha,
-  caixaFinal,
-  totalTransacoes
-) {
+function atualizarRelatorios(entradas, saidas, folha, caixaFinal, totalTransacoes) {
+  const campos = {
+    relFaturamentoMes: moeda(indicadores.faturamentoMes || 0),
+    relMRR: moeda(indicadores.mrr || 0),
+    relClientesAtivos: indicadores.clientesAtivos || 0,
+    relEntradas: moeda(entradas),
+    relSaidas: moeda(saidas),
+    relFolha: moeda(folha),
+    relSaldoFinal: moeda(caixaFinal),
+    relTransacoes: totalTransacoes
+  };
 
-  const relFaturamentoMes =
-    document.getElementById(
-      "relFaturamentoMes"
-    );
-
-  const relMRR =
-    document.getElementById(
-      "relMRR"
-    );
-
-  const relClientesAtivos =
-    document.getElementById(
-      "relClientesAtivos"
-    );
-
-  const relEntradas =
-    document.getElementById(
-      "relEntradas"
-    );
-
-  const relSaidas =
-    document.getElementById(
-      "relSaidas"
-    );
-
-  const relFolha =
-    document.getElementById(
-      "relFolha"
-    );
-
-  const relSaldoFinal =
-    document.getElementById(
-      "relSaldoFinal"
-    );
-
-  const relTransacoes =
-    document.getElementById(
-      "relTransacoes"
-    );
-
-  if (relFaturamentoMes) {
-    relFaturamentoMes.innerText =
-      moeda(
-        indicadores.faturamentoMes || 0
-      );
-  }
-
-  if (relMRR) {
-    relMRR.innerText =
-      moeda(
-        indicadores.mrr || 0
-      );
-  }
-
-  if (relClientesAtivos) {
-    relClientesAtivos.innerText =
-      indicadores.clientesAtivos || 0;
-  }
-
-  if (relEntradas) {
-    relEntradas.innerText =
-      moeda(entradas);
-  }
-
-  if (relSaidas) {
-    relSaidas.innerText =
-      moeda(saidas);
-  }
-
-  if (relFolha) {
-    relFolha.innerText =
-      moeda(folha);
-  }
-
-  if (relSaldoFinal) {
-    relSaldoFinal.innerText =
-      moeda(caixaFinal);
-  }
-
-  if (relTransacoes) {
-    relTransacoes.innerText =
-      totalTransacoes;
-  }
+  Object.entries(campos).forEach(([id, valor]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = valor;
+  });
 }
-/* =========================
-   FINANCEIRO FUNCIONÁRIOS
-========================= */
+
+/* FUNCIONÁRIOS */
 
 async function adicionarFuncionario() {
   if (!ehADM()) {
@@ -858,6 +626,7 @@ function renderizarFuncionarios() {
         <td colspan="6">Nenhum funcionário cadastrado neste mês.</td>
       </tr>
     `;
+    atualizarResumoFuncionarios();
     return;
   }
 
@@ -897,15 +666,17 @@ function atualizarResumoFuncionarios() {
   const pendentes = funcs.filter(f => f.status === "Pendente").length;
   const pagos = funcs.filter(f => f.status === "Pago").length;
 
-  const totalFolhaFuncionarios = document.getElementById("totalFolhaFuncionarios");
-  const totalFuncionarios = document.getElementById("totalFuncionarios");
-  const totalFuncionariosPendentes = document.getElementById("totalFuncionariosPendentes");
-  const totalFuncionariosPagos = document.getElementById("totalFuncionariosPagos");
+  const campos = {
+    totalFolhaFuncionarios: moeda(total),
+    totalFuncionarios: funcs.length,
+    totalFuncionariosPendentes: pendentes,
+    totalFuncionariosPagos: pagos
+  };
 
-  if (totalFolhaFuncionarios) totalFolhaFuncionarios.innerText = moeda(total);
-  if (totalFuncionarios) totalFuncionarios.innerText = funcs.length;
-  if (totalFuncionariosPendentes) totalFuncionariosPendentes.innerText = pendentes;
-  if (totalFuncionariosPagos) totalFuncionariosPagos.innerText = pagos;
+  Object.entries(campos).forEach(([id, valor]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = valor;
+  });
 }
 
 async function alternarStatusFuncionario(id, statusAtual) {
@@ -928,9 +699,20 @@ async function excluirFuncionario(id) {
 
 window.excluirFuncionario = excluirFuncionario;
 
-/* =========================
-   INDICADORES / METAS
-========================= */
+/* INDICADORES */
+
+function pegarNumeroDoInput(id, valorAtual) {
+  const campo = document.getElementById(id);
+  if (!campo) return valorAtual;
+
+  const valorTexto = campo.value;
+
+  if (valorTexto === "") {
+    return valorAtual;
+  }
+
+  return Number(valorTexto);
+}
 
 async function salvarIndicadores() {
   if (!ehADM()) {
@@ -938,29 +720,23 @@ async function salvarIndicadores() {
     return;
   }
 
-  const faturamentoMes = Number(document.getElementById("inputFaturamentoMes").value);
-  const mrr = Number(document.getElementById("inputMRR").value);
-  const clientesAtivos = Number(document.getElementById("inputClientesAtivos").value);
-  const metaFaturamento = Number(document.getElementById("inputMetaFaturamento").value);
-  const metaLucro = Number(document.getElementById("inputMetaLucro").value);
-
   const novosIndicadores = {
-    faturamentoMes: faturamentoMes >= 0 ? faturamentoMes : indicadores.faturamentoMes,
-    mrr: mrr >= 0 ? mrr : indicadores.mrr,
-    clientesAtivos: clientesAtivos >= 0 ? clientesAtivos : indicadores.clientesAtivos,
-    metaFaturamento: metaFaturamento > 0 ? metaFaturamento : indicadores.metaFaturamento,
-    metaLucro: metaLucro > 0 ? metaLucro : indicadores.metaLucro,
+    faturamentoMes: pegarNumeroDoInput("inputFaturamentoMes", indicadores.faturamentoMes),
+    mrr: pegarNumeroDoInput("inputMRR", indicadores.mrr),
+    clientesAtivos: pegarNumeroDoInput("inputClientesAtivos", indicadores.clientesAtivos),
+    metaFaturamento: pegarNumeroDoInput("inputMetaFaturamento", indicadores.metaFaturamento),
+    metaLucro: pegarNumeroDoInput("inputMetaLucro", indicadores.metaLucro),
     atualizadoPor: usuarioLogado.usuario,
     atualizadoEm: new Date().toISOString()
   };
 
   await setDoc(doc(db, "configuracoesFinanceiro", "indicadores"), novosIndicadores, { merge: true });
 
-  document.getElementById("inputFaturamentoMes").value = "";
-  document.getElementById("inputMRR").value = "";
-  document.getElementById("inputClientesAtivos").value = "";
-  document.getElementById("inputMetaFaturamento").value = "";
-  document.getElementById("inputMetaLucro").value = "";
+  ["inputFaturamentoMes", "inputMRR", "inputClientesAtivos", "inputMetaFaturamento", "inputMetaLucro"]
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
 
   alert("Indicadores salvos com sucesso!");
 }
@@ -983,34 +759,15 @@ function atualizarMetas(faturamentoMes, lucro) {
   const barraFaturamento = document.getElementById("barraFaturamento");
   const barraLucro = document.getElementById("barraLucro");
 
-  if (textoMetaFaturamento) {
-    textoMetaFaturamento.innerText = `Meta: ${moeda(indicadores.metaFaturamento)}`;
-  }
-
-  if (textoMetaLucro) {
-    textoMetaLucro.innerText = `Meta: ${moeda(indicadores.metaLucro)}`;
-  }
-
-  if (metaFaturamento) {
-    metaFaturamento.innerText = `${percFaturamento.toFixed(0)}%`;
-  }
-
-  if (metaLucro) {
-    metaLucro.innerText = `${Math.max(percLucro, 0).toFixed(0)}%`;
-  }
-
-  if (barraFaturamento) {
-    barraFaturamento.style.width = `${percFaturamento}%`;
-  }
-
-  if (barraLucro) {
-    barraLucro.style.width = `${Math.max(percLucro, 0)}%`;
-  }
+  if (textoMetaFaturamento) textoMetaFaturamento.innerText = `Meta: ${moeda(indicadores.metaFaturamento)}`;
+  if (textoMetaLucro) textoMetaLucro.innerText = `Meta: ${moeda(indicadores.metaLucro)}`;
+  if (metaFaturamento) metaFaturamento.innerText = `${percFaturamento.toFixed(0)}%`;
+  if (metaLucro) metaLucro.innerText = `${Math.max(percLucro, 0).toFixed(0)}%`;
+  if (barraFaturamento) barraFaturamento.style.width = `${percFaturamento}%`;
+  if (barraLucro) barraLucro.style.width = `${Math.max(percLucro, 0)}%`;
 }
 
-/* =========================
-   IA FINANCEIRA
-========================= */
+/* IA */
 
 function gerarResumoIA() {
   if (!ehADM()) {
@@ -1028,10 +785,15 @@ function gerarResumoIA() {
     .filter(item => item.tipo === "saida")
     .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))[0];
 
+  const ticketMedio = indicadores.clientesAtivos > 0
+    ? indicadores.faturamentoMes / indicadores.clientesAtivos
+    : 0;
+
   let texto = `
     <h4>Análise Inteligente da X4 Company</h4>
 
-    <p>O faturamento do mês informado está em <strong>${moeda(indicadores.faturamentoMes)}</strong>.</p>
+    <p>O faturamento do mês está em <strong>${moeda(indicadores.faturamentoMes)}</strong>.</p>
+    <p>A meta do mês é <strong>${moeda(indicadores.metaFaturamento)}</strong>.</p>
     <p>A receita recorrente mensal (MRR) está em <strong>${moeda(indicadores.mrr)}</strong>.</p>
     <p>A agência possui <strong>${indicadores.clientesAtivos}</strong> clientes ativos.</p>
 
@@ -1051,22 +813,18 @@ function gerarResumoIA() {
   }
 
   if (caixaFinal > 0) {
-    texto += `<p class="positivo">Diagnóstico: a empresa está com caixa final positivo. O cenário financeiro está saudável.</p>`;
+    texto += `<p class="positivo">Diagnóstico: caixa final positivo. O cenário financeiro está saudável.</p>`;
   } else if (caixaFinal < 0) {
-    texto += `<p class="negativo">Diagnóstico: a empresa está com caixa final negativo. Recomendo revisar custos, folha e despesas fixas.</p>`;
+    texto += `<p class="negativo">Diagnóstico: caixa final negativo. Recomendo revisar custos, folha e despesas fixas.</p>`;
   } else {
-    texto += `<p class="alerta">Diagnóstico: a empresa está empatada após considerar a folha.</p>`;
+    texto += `<p class="alerta">Diagnóstico: empresa empatada após considerar a folha.</p>`;
   }
 
   if (indicadores.faturamentoMes >= indicadores.metaFaturamento) {
     texto += `<p class="positivo">A meta de faturamento foi atingida ou superada.</p>`;
   } else {
-    texto += `<p>Ainda faltam <strong>${moeda(indicadores.metaFaturamento - indicadores.faturamentoMes)}</strong> para bater a meta de faturamento.</p>`;
+    texto += `<p>Ainda faltam <strong>${moeda(indicadores.metaFaturamento - indicadores.faturamentoMes)}</strong> para bater a meta.</p>`;
   }
-
-  const ticketMedio = indicadores.clientesAtivos > 0
-    ? indicadores.faturamentoMes / indicadores.clientesAtivos
-    : 0;
 
   if (ticketMedio > 0) {
     texto += `<p>Ticket médio aproximado por cliente ativo: <strong>${moeda(ticketMedio)}</strong>.</p>`;
@@ -1081,9 +839,7 @@ function gerarResumoIA() {
 
 window.gerarResumoIA = gerarResumoIA;
 
-/* =========================
-   USUÁRIOS
-========================= */
+/* USUÁRIOS */
 
 async function criarUsuario() {
   if (!ehADM()) {
@@ -1158,9 +914,7 @@ async function excluirUsuario(id) {
 
 window.excluirUsuario = excluirUsuario;
 
-/* =========================
-   GRÁFICO
-========================= */
+/* GRÁFICO */
 
 function criarGrafico(entradas, saidas, folha) {
   const canvas = document.getElementById("graficoFinanceiro");
@@ -1206,9 +960,7 @@ function criarGrafico(entradas, saidas, folha) {
   });
 }
 
-/* =========================
-   EVENTOS FINAIS
-========================= */
+/* EVENTOS */
 
 if (filtroMes) {
   filtroMes.addEventListener("change", () => {
